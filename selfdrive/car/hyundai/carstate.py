@@ -151,6 +151,7 @@ class CarState(CarStateBase):
     cp_fca = cp_cam if (self.CP.fcaBus == 2) else cp
 
     self.prev_cruise_buttons = self.cruise_buttons
+    self.prev_cruise_main_button = self.cruise_main_button
     self.prev_lkas_button_on = self.lkas_button_on
 
     ret = car.CarState.new_message()
