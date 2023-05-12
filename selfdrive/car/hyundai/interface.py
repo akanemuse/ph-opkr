@@ -285,9 +285,6 @@ class CarInterface(CarInterfaceBase):
     if not self.cp.can_valid or not self.cp2.can_valid or not self.cp_cam.can_valid:
       print('cp={}  cp2={}  cp_cam={}'.format(bool(self.cp.can_valid), bool(self.cp2.can_valid), bool(self.cp_cam.can_valid)))
 
-    #force cruise support on 
-    self.CP.pcmCruise = True
-
     # most HKG cars has no long control, it is safer and easier to engage by main on
     if self.ufc_mode_enabled:
       ret.cruiseState.enabled = ret.cruiseState.available
