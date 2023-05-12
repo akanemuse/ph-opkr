@@ -207,7 +207,6 @@ class CarState(CarStateBase):
     #                                  cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0
 
     # debug
-    ret.cruiseState.enabled = False
     ret.cruiseState.available = True
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
