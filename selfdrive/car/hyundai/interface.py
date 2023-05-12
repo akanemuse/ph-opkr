@@ -286,10 +286,10 @@ class CarInterface(CarInterfaceBase):
       print('cp={}  cp2={}  cp_cam={}'.format(bool(self.cp.can_valid), bool(self.cp2.can_valid), bool(self.cp_cam.can_valid)))
 
 
-    if self.CP.pcmCruise and not self.CC.scc_live:
-      self.CP.pcmCruise = False
-    elif self.CC.scc_live and not self.CP.pcmCruise:
-      self.CP.pcmCruise = True
+    #if self.CP.pcmCruise and not self.CC.scc_live:
+    #  self.CP.pcmCruise = False
+    #elif self.CC.scc_live and not self.CP.pcmCruise:
+    #  self.CP.pcmCruise = True
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
     if self.ufc_mode_enabled:
