@@ -434,12 +434,12 @@ class Controls:
     if not self.sm['liveLocationKalman'].deviceStable:
       self.events.add(EventName.deviceFalling)
 
-    #if not REPLAY:
+    if not REPLAY:
       # Check for mismatch between openpilot and car's PCM
-    #  cruise_mismatch = CS.cruiseState.enabled and (not self.enabled or not self.CP.pcmCruise)
-    #  self.cruise_mismatch_counter = self.cruise_mismatch_counter + 1 if cruise_mismatch else 0
-    #  if self.cruise_mismatch_counter > int(3. / DT_CTRL):
-    #    self.events.add(EventName.cruiseMismatch)
+      cruise_mismatch = CS.cruiseState.enabled and (not self.enabled or not self.CP.pcmCruise)
+      self.cruise_mismatch_counter = self.cruise_mismatch_counter + 1 if cruise_mismatch else 0
+      if self.cruise_mismatch_counter > int(3. / DT_CTRL):
+        self.events.add(EventName.cruiseMismatch)
 
     # Check for FCW
     stock_long_is_braking = self.enabled and not self.CP.openpilotLongitudinalControl and CS.aEgo < -1.25
@@ -547,9 +547,11 @@ class Controls:
     t_speed = 30 if IS_KPH else 20
     m_unit = CV.MS_TO_KPH if IS_KPH else CV.MS_TO_MPH
 
-    # force cruise support
-    self.CP.pcmCruise = True
-
+    if self.CP.pcmCruise and not self.CC.scc_live:
+      self.CP.pcmCruise = False
+    elif self.CC.scc_live and not self.CP.pcmCruise:
+      self.CP.pcmCruise = True
+      
     if self.v_cruise_kph_set_timer > 0:
       self.v_cruise_kph_set_timer -= 1
     # if stock cruise is completely disabled, then we can use our own set speed logic
