@@ -26,7 +26,7 @@ class CarState(CarStateBase):
       self.shifter_values = can_define.dv["LVR12"]["CF_Lvr_Gear"]
 
     #Auto detection for setup
-    self.no_radar = CP.sccBus == -1
+    self.no_radar = True #CP.sccBus == -1 #hardcode no radar
     self.lkas_button_on = True
     self.cruise_main_button = 0
     self.mdps_error_cnt = 0

@@ -47,7 +47,7 @@ class CarInterface(CarInterfaceBase):
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
 
-    ret.radarOffCan = ret.sccBus == -1
+    ret.radarOffCan = True #ret.sccBus == -1
     ret.standStill = False
     ret.openpilotLongitudinalControl = Params().get_bool("RadarDisable") or ret.sccBus == 2
 
@@ -285,11 +285,8 @@ class CarInterface(CarInterfaceBase):
     if not self.cp.can_valid or not self.cp2.can_valid or not self.cp_cam.can_valid:
       print('cp={}  cp2={}  cp_cam={}'.format(bool(self.cp.can_valid), bool(self.cp2.can_valid), bool(self.cp_cam.can_valid)))
 
-
-    #if self.CP.pcmCruise and not self.CC.scc_live:
-    #  self.CP.pcmCruise = False
-    #elif self.CC.scc_live and not self.CP.pcmCruise:
-    #  self.CP.pcmCruise = True
+    #force cruise support on 
+    self.CP.pcmCruise = True
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
     if self.ufc_mode_enabled:
