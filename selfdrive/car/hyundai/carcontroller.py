@@ -115,7 +115,7 @@ class CarController():
 
     self.longcontrol = CP.openpilotLongitudinalControl
     #self.scc_live is true because CP.radarOffCan is False
-    self.scc_live = True #not CP.radarOffCan
+    self.scc_live = not CP.radarOffCan
 
     self.timer1 = tm.CTime1000("time")
 

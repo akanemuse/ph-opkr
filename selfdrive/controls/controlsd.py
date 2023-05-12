@@ -547,11 +547,6 @@ class Controls:
     t_speed = 30 if IS_KPH else 20
     m_unit = CV.MS_TO_KPH if IS_KPH else CV.MS_TO_MPH
 
-    if self.CP.pcmCruise and not self.CC.scc_live:
-      self.CP.pcmCruise = False
-    elif self.CC.scc_live and not self.CP.pcmCruise:
-      self.CP.pcmCruise = True
-      
     if self.v_cruise_kph_set_timer > 0:
       self.v_cruise_kph_set_timer -= 1
     # if stock cruise is completely disabled, then we can use our own set speed logic
