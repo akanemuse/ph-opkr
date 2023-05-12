@@ -63,7 +63,7 @@ class CarInterface(CarInterfaceBase):
     ret.minSteerSpeed = 16.67 # m/s
 
     # Most Hyundai car ports are community features for now
-    ret.pcmCruise = not ret.radarOffCan
+    ret.pcmCruise = True #not ret.radarOffCan
 
     ret.steerActuatorDelay = 0.25  # Default delay
     ret.steerLimitTimer = 0.8
