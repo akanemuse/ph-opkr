@@ -152,9 +152,6 @@ class CarState(CarStateBase):
     cp_scc = cp_cam if self.CP.sccBus == 2 else cp2 if self.CP.sccBus == 1 else cp
     cp_fca = cp_cam if (self.CP.fcaBus == 2) else cp
 
-    if self.prev_cruise_main_button != self.cruise_main_button:
-      OpenPilotEnabled = not OpenPilotEnabled
-
     self.prev_cruise_buttons = self.cruise_buttons
     self.prev_cruise_main_button = self.cruise_main_button
     self.prev_lkas_button_on = self.lkas_button_on
@@ -206,7 +203,7 @@ class CarState(CarStateBase):
       self.driverAcc_time -= 1
 
     # cruise state
-
+    
     ret.cruiseState.enabled = (cp_scc.vl["SCC12"]["ACCMode"] != 0) if not self.no_radar else \
                                       cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
     #ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
@@ -238,6 +235,10 @@ class CarState(CarStateBase):
       ret.cruiseState.speed = 0
 
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
+
+    if self.prev_cruise_main_button != self.cruise_main_button:
+      OpenPilotEnabled = not OpenPilotEnabled
+
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
     ret.cruiseButtons = self.cruise_buttons
