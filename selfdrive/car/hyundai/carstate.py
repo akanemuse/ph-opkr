@@ -11,8 +11,6 @@ from common.params import Params
 
 GearShifter = car.CarState.GearShifter
 
-OpenPilotEnabled = False
-
 FCA_OPT = Params().get_bool('RadarDisable')
 
 class CarState(CarStateBase):
@@ -33,6 +31,8 @@ class CarState(CarStateBase):
     self.cruise_main_button = 0
     self.mdps_error_cnt = 0
     self.cruiseState_standstill = False
+
+    self.OpenPilotEnabled = False
 
     self.lfahda = None
 
@@ -208,7 +208,7 @@ class CarState(CarStateBase):
                                       cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
     #ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
     #                                  cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0
-    ret.cruiseState.available = OpenPilotEnabled
+    ret.cruiseState.available = self.OpenPilotEnabled
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
     self.cruiseState_standstill = ret.cruiseState.standstill
@@ -237,7 +237,7 @@ class CarState(CarStateBase):
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
 
     if self.prev_cruise_main_button != self.cruise_main_button:
-      OpenPilotEnabled = not OpenPilotEnabled
+      self.OpenPilotEnabled = not self.OpenPilotEnabled
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
