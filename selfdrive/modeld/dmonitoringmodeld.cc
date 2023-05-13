@@ -22,7 +22,7 @@ void run_model(DMonitoringModelState &model, VisionIpcClient &vipc_client) {
     if (buf == nullptr) continue;
 
     double t1 = millis_since_boot();
-    #DMonitoringResult res = dmonitoring_eval_frame(&model, buf->addr, buf->width, buf->height);
+    //DMonitoringResult res = dmonitoring_eval_frame(&model, buf->addr, buf->width, buf->height);
     double t2 = millis_since_boot();
 
     // send dm packet
