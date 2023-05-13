@@ -303,16 +303,18 @@ class CarInterface(CarInterfaceBase):
       if but == Buttons.RES_ACCEL:
         be.type = ButtonType.accelCruise
       elif but == Buttons.SET_DECEL:
-        be.type = ButtonType.decelCruise
+        if not self.CS.pilotEnabled:
+          self.CS.pilotEnabled = True
+        else:
+          be.type = ButtonType.decelCruise
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-      #elif but == Buttons.CANCEL:
-      #  be.type = ButtonType.cancel
+      elif but == Buttons.CANCEL:
+        self.CS.pilotEnabled = False
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
-      self.CS.pilotEnabled = not self.CS.pilotEnabled
       be = car.CarState.ButtonEvent.new_message()
       be.type = ButtonType.altButton3
       be.pressed = bool(self.CS.cruise_main_button)
