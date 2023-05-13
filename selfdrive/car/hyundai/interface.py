@@ -312,6 +312,7 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.unknown
       buttonEvents.append(be)
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
+      self.CS.pilotEnabled = not self.CS.pilotEnabled
       be = car.CarState.ButtonEvent.new_message()
       be.type = ButtonType.altButton3
       be.pressed = bool(self.CS.cruise_main_button)
