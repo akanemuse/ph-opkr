@@ -452,7 +452,7 @@ class CarState(CarStateBase):
       ("AVH_LAMP", "TCS15"),
 
       ("CF_Lvr_CruiseSet", "LVR12"),
-      ("CRUISE_LAMP_M", "EMS16"),
+      ("CRUISE_LAMP_S", "EMS16"),
 
       ("MainMode_ACC", "SCC11"),
       ("SCCInfoDisplay", "SCC11"),
