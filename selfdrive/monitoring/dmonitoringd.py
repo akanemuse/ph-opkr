@@ -80,8 +80,8 @@ def dmonitoringd_thread(sm=None, pm=None):
 
 
 def main(sm=None, pm=None):
-  print('driver monitoring disabled')
-  #dmonitoringd_thread(sm, pm)
+  dmonitoringd_thread(sm, pm)
+
 
 if __name__ == '__main__':
   main()
