@@ -14,4 +14,4 @@ else
   # PC
   export LD_LIBRARY_PATH="$DIR/../../third_party/snpe/x86_64-linux-clang:$DIR/../../openpilot/third_party/snpe/x86_64:$LD_LIBRARY_PATH"
 fi
-exec ./_dmonitoringmodeld
+#exec ./_dmonitoringmodeld
