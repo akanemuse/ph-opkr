@@ -54,7 +54,7 @@ class CarState(CarStateBase):
     self.safety_dist = 0
     self.safety_block_sl = 150
     self.is_highway = False
-    self.is_set_speed_in_mph = False
+    self.is_set_speed_in_mph = True
     self.map_enabled = False
     self.cs_timer = 0
     self.cruise_active = False
@@ -208,7 +208,7 @@ class CarState(CarStateBase):
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
     self.cruiseState_standstill = ret.cruiseState.standstill
-    self.is_set_speed_in_mph = bool(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
+    self.is_set_speed_in_mph = True
     ret.isMph = self.is_set_speed_in_mph
     
     self.acc_active = cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
