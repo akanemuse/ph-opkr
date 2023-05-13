@@ -560,7 +560,7 @@ class CarController():
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0
       self.standstill_res_button = False
-    elif self.opkr_variablecruise and CS.acc_active and CS.out.cruiseState.modeSel > 0:
+    elif self.opkr_variablecruise and CS.pilotEnabled and CS.out.cruiseState.modeSel > 0:
       self.on_speed_control = self.NC.onSpeedControl
       self.on_speed_bump_control = self.NC.onSpeedBumpControl
       self.curv_speed_control = self.NC.curvSpeedControl
