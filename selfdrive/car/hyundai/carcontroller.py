@@ -512,11 +512,10 @@ class CarController():
     # self.sm['longitudinalPlan'].speeds <--- array of desired speeds
     # can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) <--- how to send a button press
     # can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * send_count) <--- send lots of presses at once
+    # self.sm['longitudinalPlan'].e2eX[12] <--- something
+    # self.sm['longitudinalPlan'].cruiseTarget <--- something
 
-    max_speed = 0
-    for x in self.sm['longitudinalPlan'].cruiseTarget:
-      if x > max_speed:
-        max_speed = x     
+    max_speed = 25 #self.sm['longitudinalPlan'].cruiseTarget[12] * 0.2
 
     if max_speed < 20:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
