@@ -204,7 +204,8 @@ class CarState(CarStateBase):
 
     # cruise state
     
-    ret.cruiseState.available = self.pilotEnabled
+    #ret.cruiseState.available = self.pilotEnabled
+    ret.cruiseState.available = cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
     self.cruiseState_standstill = ret.cruiseState.standstill
