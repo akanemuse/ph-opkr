@@ -224,7 +224,7 @@ class CarState(CarStateBase):
     ret.cruiseState.cruiseSwState = self.cruise_buttons
     ret.cruiseState.modeSel = self.cruise_set_mode
 
-    self.current_cruise_speed = cp.vl["LVR12"]["CF_Lvr_CruiseSet"]
+    self.current_cruise_speed = cp.vl["E_EMS11"]["Cruise_Limit_Target"]
 
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
 
@@ -448,6 +448,8 @@ class CarState(CarStateBase):
 
       ("CF_Lvr_CruiseSet", "LVR12"),
       ("CRUISE_LAMP_S", "EMS16"),
+      ("Cruise_Limit_Target", "E_EMS11"),
+      ("Cruise_Limit_Status", "E_EMS11"),
 
       ("MainMode_ACC", "SCC11"),
       ("SCCInfoDisplay", "SCC11"),

@@ -507,9 +507,9 @@ class CarController():
     if pcm_cancel_cmd and self.longcontrol:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL, clu11_speed, CS.CP.sccBus))
 
-    # CS.current_cruise_speed <--- current normal cruise control speed, maybe (need to get this from carstate)
-    # clu11_speed <--- current car speed
-    # self.sm['longitudinalPlan'].speeds <--- array of desired speeds
+    # CS.current_cruise_speed
+    # clu11_speed <--- current car speed WORKS
+    # self.sm['longitudinalPlan'].speeds <--- array of desired speeds (seems to be all zeros)
     # can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) <--- how to send a button press
     # can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * send_count) <--- send lots of presses at once
     # self.sm['longitudinalPlan'].e2eX[12] <--- something
@@ -519,9 +519,9 @@ class CarController():
 
     if max_speed < 20:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
-    elif clu11_speed >= max_speed and max_speed > 20 and frame%2 == 0:
+    elif CS.current_cruise_speed >= max_speed:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
-    elif clu11_speed < max_speed and frame%2 == 0:
+    else:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
