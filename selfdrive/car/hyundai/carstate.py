@@ -224,15 +224,7 @@ class CarState(CarStateBase):
     ret.cruiseState.cruiseSwState = self.cruise_buttons
     ret.cruiseState.modeSel = self.cruise_set_mode
 
-    set_speed = self.cruise_speed_button()
-    if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
-      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = set_speed * speed_conv if not self.no_radar else \
-                                         cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
-    else:
-      ret.cruiseState.speed = 0
-
-    self.current_cruise_speed = ret.cruiseState.speed
+    self.current_cruise_speed = cp.vl["LVR12"]["CF_Lvr_CruiseSet"]
 
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
 
