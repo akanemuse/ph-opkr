@@ -124,32 +124,11 @@ class LanePlanner:
       if self.params.get_bool("OpkrLiveTunePanelEnable"):
         self.camera_offset = -(float(Decimal(self.params.get("CameraOffsetAdj", encoding="utf8")) * Decimal('0.001')))
 
-    if self.drive_close_to_edge: # opkr
-      left_edge_prob = np.clip(1.0 - md.roadEdgeStds[0], 0.0, 1.0)
-      left_nearside_prob = md.laneLineProbs[0]
-      left_close_prob = md.laneLineProbs[1]
-      right_close_prob = md.laneLineProbs[2]
-      right_nearside_prob = md.laneLineProbs[3]
-      right_edge_prob = np.clip(1.0 - md.roadEdgeStds[1], 0.0, 1.0)
-
-      self.lp_timer3 += DT_MDL
-      if self.lp_timer3 > 3.0:
-        self.lp_timer3 = 0.0
-        if right_nearside_prob < 0.1 and left_nearside_prob < 0.1:
-          self.road_edge_offset = 0.0
-        elif right_edge_prob > 0.35 and right_nearside_prob < 0.2 and right_close_prob > 0.5 and left_nearside_prob >= right_nearside_prob:
-          self.road_edge_offset = -self.right_edge_offset
-        elif left_edge_prob > 0.35 and left_nearside_prob < 0.2 and left_close_prob > 0.5 and right_nearside_prob >= left_nearside_prob:
-          self.road_edge_offset = -self.left_edge_offset
-        else:
-          self.road_edge_offset = 0.0
-    else:
-      self.road_edge_offset = 0.0
     if self.speed_offset:
       speed_offset = -interp(v_ego, [0, 11.1, 16.6, 22.2, 31], [0.10, 0.05, 0.02, 0.01, 0.0])
     else:
       speed_offset = 0.0
-    self.total_camera_offset = self.camera_offset + lean_offset + current_road_offset + self.road_edge_offset + speed_offset
+    self.total_camera_offset = self.camera_offset + lean_offset + current_road_offset + self.left_edge_offset + speed_offset
 
     lane_lines = md.laneLines
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
