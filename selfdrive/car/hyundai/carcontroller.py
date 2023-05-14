@@ -511,9 +511,10 @@ class CarController():
     # clu11_speed <--- current car speed
     # self.sm['longitudinalPlan'].speeds <--- array of desired speeds
     # can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) <--- how to send a button press
+    # can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * send_count) <--- send lots of presses at once
 
     max_speed = 0
-    for x in self.sm['longitudinalPlan'].speeds:
+    for x in self.sm['longitudinalPlan'].cruiseTarget:
       if x > max_speed:
         max_speed = x     
 
@@ -521,9 +522,9 @@ class CarController():
       if max_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
       elif clu11_speed >= max_speed:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+        can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)] * 5) #slow cruise
       else:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
+        can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * 5) #speed cruise
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
