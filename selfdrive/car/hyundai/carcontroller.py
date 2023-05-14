@@ -518,13 +518,12 @@ class CarController():
       if x > max_speed:
         max_speed = x     
 
-    if frame%2 == 0:
-      if max_speed < 20:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
-      elif clu11_speed >= max_speed:
-        can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)] * 5) #slow cruise
-      else:
-        can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * 5) #speed cruise
+    if max_speed < 20:
+      can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
+    elif clu11_speed >= max_speed and max_speed > 20 and frame%2 == 0:
+      can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+    elif clu11_speed < max_speed and frame%2 == 0:
+      can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
