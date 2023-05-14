@@ -38,6 +38,7 @@ class CarState(CarStateBase):
 
     self.driverAcc_time = 0
 
+    self.current_cruise_speed = 0
     self.prev_cruise_buttons = 0
     self.prev_gap_button = 0
     
@@ -204,8 +205,7 @@ class CarState(CarStateBase):
 
     # cruise state
     
-    #ret.cruiseState.available = self.pilotEnabled
-    ret.cruiseState.available = cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
+    ret.cruiseState.available = self.pilotEnabled
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
     self.cruiseState_standstill = ret.cruiseState.standstill
@@ -231,6 +231,8 @@ class CarState(CarStateBase):
                                          cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
     else:
       ret.cruiseState.speed = 0
+
+    self.current_cruise_speed = ret.cruiseState.speed
 
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
 
