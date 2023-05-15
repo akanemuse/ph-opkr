@@ -517,11 +517,19 @@ class CarController():
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
 
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
-    e2eX_speed = 0
     long_speeds = self.sm['longitudinalPlan'].speeds
-    long_speed = 0
     cruise_targets = self.sm['longitudinalPlan'].cruiseTarget
+    lead_0_obs = self.sm['longitudinalPlan'].lead0Obstacle
+    lead_1_obs = self.sm['longitudinalPlan'].lead1Obstacle
+    stoplines = self.sm['longitudinalPlan'].stopLine
+    stoplinesp = self.sm['longitudinalPlan'].stoplineProb
+    e2eX_speed = 0
+    long_speed = 0
     cruise_target = 0
+    lead_0_ob = 0
+    lead_1_ob = 0
+    stopline = 0
+    stoplinep = 0
 
     if len(e2eX_speeds) > 0:
       e2eX_speed = e2eX_speeds[-1]
@@ -529,10 +537,18 @@ class CarController():
       long_speed = long_speeds[-1]
     if len(cruise_targets) > 0:
       cruise_target = cruise_targets[-1]
+    if len(lead_0_obs) > 0:
+      lead_0_ob = lead_0_obs[-1]
+    if len(lead_1_obs) > 0:
+      lead_1_ob = lead_1_obs[-1]
+    if len(stoplines) > 0:
+      stopline = stoplines[-1]
+    if len(stoplinesp) > 0:
+      stoplinep = stoplinesp[-1]
     
     desired_speed = long_speed * 0.333
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed))
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinep))
 
     if desired_speed < 20:
       if CS.current_cruise_speed >= 20:
