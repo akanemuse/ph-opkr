@@ -65,6 +65,9 @@ class CarInterface(CarInterfaceBase):
     # Most Hyundai car ports are community features for now
     ret.pcmCruise = False #not ret.radarOffCan
 
+    # place to store max speed
+    ret.max_speed_set_mph = 0
+
     ret.steerActuatorDelay = 0.25  # Default delay
     ret.steerLimitTimer = 0.8
     tire_stiffness_factor = 1.

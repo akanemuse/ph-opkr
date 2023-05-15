@@ -507,7 +507,7 @@ class CarController():
     if pcm_cancel_cmd and self.longcontrol:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL, clu11_speed, CS.CP.sccBus))
 
-    # CS.max_speed_set <--- max speed from screen
+    # CS.CP.max_speed_set_mph <--- max speed from screen
     # CS.current_cruise_speed <--- WORKS
     # clu11_speed <--- current car speed WORKS
     # self.sm['longitudinalPlan'].speeds <--- array of desired speeds (seems to be all zeros)
@@ -548,7 +548,7 @@ class CarController():
     desired_speed = v_future_a;
 
     # about to hit a stop sign
-    if stoplinesp > 0.7:
+    if stoplinesp > 0.72:
       desired_speed = 0
 
     # what is our difference between desired speed and target speed?
@@ -558,9 +558,12 @@ class CarController():
     desired_speed += speed_diff * 0.5
 
     # dont go over max speed
-    max_speed_in_mph = CS.max_speed_set * 0.621371
-    if desired_speed > max_speed_in_mph:
-      desired_speed = max_speed_in_mph
+    if desired_speed > CS.CP.max_speed_set_mph:
+      desired_speed = CS.CP.max_speed_set_mph
+
+    # sanity check
+    if desired_speed < 0:
+      desired_speed = 0
 
     trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinesp))
 
