@@ -507,7 +507,7 @@ class CarController():
     if pcm_cancel_cmd and self.longcontrol:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL, clu11_speed, CS.CP.sccBus))
 
-    # CS.CP.max_speed_set_mph <--- max speed from screen
+    # self.CP.vCruisekph <--- max speed from screen
     # CS.current_cruise_speed <--- WORKS
     # clu11_speed <--- current car speed WORKS
     # self.sm['longitudinalPlan'].speeds <--- array of desired speeds (seems to be all zeros)
@@ -558,8 +558,9 @@ class CarController():
     desired_speed += speed_diff * 0.5
 
     # dont go over max speed
-    if desired_speed > CS.CP.max_speed_set_mph:
-      desired_speed = CS.CP.max_speed_set_mph
+    max_speed_in_mph = self.CP.vCruisekph * 0.621371
+    if desired_speed > max_speed_in_mph:
+      desired_speed = max_speed_in_mph
 
     # sanity check
     if desired_speed < 0:

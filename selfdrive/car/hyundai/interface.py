@@ -65,9 +65,6 @@ class CarInterface(CarInterfaceBase):
     # Most Hyundai car ports are community features for now
     ret.pcmCruise = False #not ret.radarOffCan
 
-    # place to store max speed
-    ret.max_speed_set_mph = 0
-
     ret.steerActuatorDelay = 0.25  # Default delay
     ret.steerLimitTimer = 0.8
     tire_stiffness_factor = 1.
@@ -365,10 +362,10 @@ class CarInterface(CarInterfaceBase):
       self.CP.standStill = True
     else:
       self.CP.standStill = False
-    if self.CC.v_cruise_kph_auto_res > (20 if self.CS.is_set_speed_in_mph else 30):
-      self.CP.vCruisekph = self.CC.v_cruise_kph_auto_res
-    else:
-      self.CP.vCruisekph = 0
+    #if self.CC.v_cruise_kph_auto_res > (20 if self.CS.is_set_speed_in_mph else 30):
+    #  self.CP.vCruisekph = self.CC.v_cruise_kph_auto_res
+    #else:
+    #  self.CP.vCruisekph = 0
     if self.CC.res_speed != 0:
       self.CP.resSpeed = self.CC.res_speed
     else:
