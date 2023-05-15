@@ -35,6 +35,7 @@ class CarState(CarStateBase):
     self.lfahda = None
 
     self.pilotEnabled = False
+    self.max_speed_set = 0
 
     self.driverAcc_time = 0
 

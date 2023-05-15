@@ -507,7 +507,7 @@ class CarController():
     if pcm_cancel_cmd and self.longcontrol:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL, clu11_speed, CS.CP.sccBus))
 
-    # need to set a max speed from pressing SET/DECEL and display it on the screen
+    # CS.max_speed_set <--- max speed from screen
     # CS.current_cruise_speed <--- WORKS
     # clu11_speed <--- current car speed WORKS
     # self.sm['longitudinalPlan'].speeds <--- array of desired speeds (seems to be all zeros)
@@ -516,6 +516,7 @@ class CarController():
     # self.sm['longitudinalPlan'].e2eX[12] <--- something
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
 
+    # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     long_speeds = self.sm['longitudinalPlan'].speeds
     cruise_targets = self.sm['longitudinalPlan'].cruiseTarget
@@ -542,8 +543,24 @@ class CarController():
       lead_1_ob = lead_1_obs[-1]
     if len(stoplines) > 0:
       stopline = stoplines[-1]
-    
-    desired_speed = long_speed * 0.333
+
+    # v_future_a seems like a good speed target    
+    desired_speed = v_future_a;
+
+    # about to hit a stop sign
+    if stoplinesp > 0.7:
+      desired_speed = 0
+
+    # what is our difference between desired speed and target speed?
+    speed_diff = desired_speed - clu11_speed
+
+    # apply a spam overpress to hurry up cruise control
+    desired_speed += speed_diff * 0.5
+
+    # dont go over max speed
+    max_speed_in_mph = CS.max_speed_set * 0.621371
+    if desired_speed > max_speed_in_mph:
+      desired_speed = max_speed_in_mph
 
     trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinesp))
 
