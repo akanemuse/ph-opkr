@@ -507,21 +507,26 @@ class CarController():
     if pcm_cancel_cmd and self.longcontrol:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL, clu11_speed, CS.CP.sccBus))
 
-    # CS.current_cruise_speed
+    # need to set a max speed from pressing SET/DECEL and display it on the screen
+    # CS.current_cruise_speed <--- WORKS
     # clu11_speed <--- current car speed WORKS
     # self.sm['longitudinalPlan'].speeds <--- array of desired speeds (seems to be all zeros)
     # can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) <--- how to send a button press
     # can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * send_count) <--- send lots of presses at once
     # self.sm['longitudinalPlan'].e2eX[12] <--- something
-    # self.sm['longitudinalPlan'].cruiseTarget <--- something
+    # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
 
-    max_speed = 25 #self.sm['longitudinalPlan'].cruiseTarget[12] * 0.2
+    long_speed = self.sm['longitudinalPlan'].speeds[12]
+    cruise_target_12 = self.sm['longitudinalPlan'].cruiseTarget[12]
+    desired_speed = long_speed * 0.333
 
-    if max_speed < 20:
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target_12) + ", LS>" + "{:.2f}".format(long_speed) + ", vT>" + )
+
+    if desired_speed < 20:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
-    elif CS.current_cruise_speed >= max_speed:
+    elif CS.current_cruise_speed > desired_speed:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
-    else:
+    elif CS.current_cruise_speed < desired_speed:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
@@ -862,8 +867,6 @@ class CarController():
           self.str_log2 = 'T={:0.2f}/{:0.2f}/{:0.2f}/{:0.3f}'.format(float(Decimal(self.params.get("TorqueKp", encoding="utf8"))*Decimal('0.1'))/max_lat_accel, \
            float(Decimal(self.params.get("TorqueKf", encoding="utf8"))*Decimal('0.1'))/max_lat_accel, float(Decimal(self.params.get("TorqueKi", encoding="utf8"))*Decimal('0.1'))/max_lat_accel, \
            float(Decimal(self.params.get("TorqueFriction", encoding="utf8")) * Decimal('0.001')))
-
-    trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.car_fingerprint in FEATURES["send_lfahda_mfa"]:
