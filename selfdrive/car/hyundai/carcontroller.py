@@ -516,15 +516,27 @@ class CarController():
     # self.sm['longitudinalPlan'].e2eX[12] <--- something
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
 
-    e2eX_speed = self.sm['longitudinalPlan'].e2eX[12]
-    long_speed = self.sm['longitudinalPlan'].speeds[12]
-    cruise_target_12 = self.sm['longitudinalPlan'].cruiseTarget[12]
+    e2eX_speeds = self.sm['longitudinalPlan'].e2eX
+    e2eX_speed = 0
+    long_speeds = self.sm['longitudinalPlan'].speeds
+    long_speed = 0
+    cruise_targets = self.sm['longitudinalPlan'].cruiseTarget
+    cruise_target = 0
+
+    if len(e2eX_speeds) > 0:
+      e2eX_speed = e2eX_speeds[-1]
+    if len(long_speeds) > 0:
+      long_speed = long_speeds[-1]
+    if len(cruise_targets) > 0:
+      cruise_target = cruise_targets[-1]
+    
     desired_speed = long_speed * 0.333
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target_12) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed))
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed))
 
     if desired_speed < 20:
-      can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
+      if CS.current_cruise_speed >= 20:
+        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
     elif CS.current_cruise_speed > desired_speed:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
     elif CS.current_cruise_speed < desired_speed:
