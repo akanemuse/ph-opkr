@@ -516,11 +516,12 @@ class CarController():
     # self.sm['longitudinalPlan'].e2eX[12] <--- something
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
 
+    e2eX_speed = self.sm['longitudinalPlan'].e2eX[12]
     long_speed = self.sm['longitudinalPlan'].speeds[12]
     cruise_target_12 = self.sm['longitudinalPlan'].cruiseTarget[12]
     desired_speed = long_speed * 0.333
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target_12) + ", LS>" + "{:.2f}".format(long_speed) + ", vT>" + )
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target_12) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed))
 
     if desired_speed < 20:
       can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
