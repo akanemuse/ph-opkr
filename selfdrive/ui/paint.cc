@@ -521,7 +521,7 @@ static void ui_draw_gear( UIState *s ) {
 
 static void ui_draw_vision_maxspeed_org(UIState *s) {
   const int SET_SPEED_NA = 255;
-  float maxspeed = round(s->scene.controls_state.getVCruise());
+  float maxspeed = round(s->scene.controls_state.getVCruise()) * 0.621371;
   float cruise_speed = round(s->scene.vSetDis);
   const bool is_cruise_set = maxspeed != 0 && maxspeed != SET_SPEED_NA;
   int limitspeedcamera = s->scene.limitSpeedCamera;
@@ -577,7 +577,7 @@ static void ui_draw_vision_maxspeed_org(UIState *s) {
 
 static void ui_draw_vision_maxspeed(UIState *s) {
   const int SET_SPEED_NA = 255;
-  float maxspeed = round((*s->sm)["controlsState"].getControlsState().getVCruise());
+  float maxspeed = round((*s->sm)["controlsState"].getControlsState().getVCruise()) * 0.621371;
   const bool is_cruise_set = maxspeed != 0 && maxspeed != SET_SPEED_NA && s->scene.controls_state.getEnabled();
 
   int viz_max_o = 184; //offset value to move right
@@ -597,7 +597,7 @@ static void ui_draw_vision_maxspeed(UIState *s) {
 
 static void ui_draw_vision_cruise_speed(UIState *s) {
   const int SET_SPEED_NA = 255;
-  float maxspeed = round(s->scene.controls_state.getVCruise());
+  float maxspeed = round(s->scene.controls_state.getVCruise()) * 0.621371;
   float ctrlspeed = round(s->scene.controls_state.getSafetySpeed());  
   const bool is_cruise_set = maxspeed != 0 && maxspeed != SET_SPEED_NA;
   int limitspeedcamera = s->scene.limitSpeedCamera;
@@ -1376,7 +1376,7 @@ static void draw_safetysign(UIState *s) {
   char safetyDist[32];
   int safety_speed = s->scene.limitSpeedCamera;
   float safety_dist = s->scene.limitSpeedCameraDist;
-  float maxspeed = round(s->scene.controls_state.getVCruise());
+  float maxspeed = round(s->scene.controls_state.getVCruise()) * 0.621371;
   //int safety_speed = s->scene.liveNaviData.opkrspeedlimit;
   //float safety_dist = s->scene.liveNaviData.opkrspeedlimitdist;
   int sl_opacity = 0;
