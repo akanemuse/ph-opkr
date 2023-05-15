@@ -557,8 +557,12 @@ class CarController():
     # apply a spam overpress to hurry up cruise control
     desired_speed += speed_diff * 0.5
 
-    # dont go over max speed
+    # dont go over max speed, which should be slightly over cruise control min
+    # so it doesn't just disable it immediately
     max_speed_in_mph = self.CP.vCruisekph * 0.621371
+    if max_speed_in_mph < 22:
+      max_speed_in_mph = 22
+
     if desired_speed > max_speed_in_mph:
       desired_speed = max_speed_in_mph
 
@@ -568,6 +572,7 @@ class CarController():
 
     trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinesp))
 
+    # only make cruise button changes if we are actually on cruise control
     if CS.current_cruise_speed >= 20:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
