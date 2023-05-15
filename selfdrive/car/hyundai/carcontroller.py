@@ -529,7 +529,6 @@ class CarController():
     lead_0_ob = 0
     lead_1_ob = 0
     stopline = 0
-    stoplinep = 0
 
     if len(e2eX_speeds) > 0:
       e2eX_speed = e2eX_speeds[-1]
@@ -543,12 +542,10 @@ class CarController():
       lead_1_ob = lead_1_obs[-1]
     if len(stoplines) > 0:
       stopline = stoplines[-1]
-    if len(stoplinesp) > 0:
-      stoplinep = stoplinesp[-1]
     
     desired_speed = long_speed * 0.333
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinep))
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     if desired_speed < 20:
       if CS.current_cruise_speed >= 20:
