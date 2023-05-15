@@ -63,7 +63,7 @@ class CarInterface(CarInterfaceBase):
     ret.minSteerSpeed = 16.67 # m/s
 
     # Most Hyundai car ports are community features for now
-    ret.pcmCruise = True #not ret.radarOffCan
+    ret.pcmCruise = False #not ret.radarOffCan
 
     ret.steerActuatorDelay = 0.25  # Default delay
     ret.steerLimitTimer = 0.8
@@ -285,8 +285,8 @@ class CarInterface(CarInterfaceBase):
     if not self.cp.can_valid or not self.cp2.can_valid or not self.cp_cam.can_valid:
       print('cp={}  cp2={}  cp_cam={}'.format(bool(self.cp.can_valid), bool(self.cp2.can_valid), bool(self.cp_cam.can_valid)))
 
-    # force cruise enable
-    self.CP.pcmCruise = True
+    # force cruise DISABLE so we use simple system instead
+    self.CP.pcmCruise = False
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
     if self.ufc_mode_enabled:
