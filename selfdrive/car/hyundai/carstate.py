@@ -206,6 +206,7 @@ class CarState(CarStateBase):
 
     # cruise state
     
+    self.current_cruise_speed = cp.vl["E_EMS11"]["Cruise_Limit_Target"]
     ret.cruiseState.available = self.pilotEnabled
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
@@ -213,7 +214,7 @@ class CarState(CarStateBase):
     self.is_set_speed_in_mph = True
     ret.isMph = self.is_set_speed_in_mph
     
-    self.acc_active = cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
+    self.acc_active = self.current_cruise_speed != 0
     ret.cruiseState.enabled = self.acc_active
     self.cruise_active = self.acc_active
     if self.cruise_active:
@@ -224,8 +225,7 @@ class CarState(CarStateBase):
     ret.cruiseState.gapSet = cp.vl["SCC11"]['TauGapSet']
     ret.cruiseState.cruiseSwState = self.cruise_buttons
     ret.cruiseState.modeSel = self.cruise_set_mode
-
-    self.current_cruise_speed = cp.vl["E_EMS11"]["Cruise_Limit_Target"]
+    ret.cruiseState.speed = self.current_cruise_speed
 
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
 
