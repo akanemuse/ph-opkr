@@ -587,7 +587,7 @@ class CarController():
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
-      self.temp_disable_spamming = 3
+      self.temp_disable_spamming = 5
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
@@ -595,7 +595,7 @@ class CarController():
     if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
-        self.temp_disable_spamming = 3 #we disabled cruise, don't spam more cancels
+        self.temp_disable_spamming = 5 #we disabled cruise, don't spam more cancels
       elif CS.current_cruise_speed > desired_speed:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
       elif CS.current_cruise_speed < desired_speed:
@@ -633,14 +633,9 @@ class CarController():
     if CS.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
-    str_log1 = 'MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}  FR={:03.0f}'.format(
-      CS.out.cruiseState.modeSel, CS.CP.mdpsBus, CS.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), v_future, self.p.STEER_MAX, self.p.STEER_DELTA_UP, self.p.STEER_DELTA_DOWN, self.timer1.sampleTime())
-    if CS.out.cruiseState.accActive:
-      str_log2 = 'AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  TS={:03.0f}  SS/VS={:03.0f}/{:03.0f}  RD/LD={:04.1f}/{:03.1f}  CG={:1.0f}  FR={:03.0f}'.format(
-       self.aq_value if self.longcontrol else CS.scc12["aReqValue"], v_future, v_future_a, self.NC.ctrl_speed , setSpeed, round(CS.VSetDis), CS.lead_distance, self.last_lead_distance, CS.cruiseGapSet, self.timer1.sampleTime())
-    else:
-      str_log2 = 'MDPS={}  LKAS={}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}  FR={:03.0f}'.format(
+    str_log2 = 'MDPS={}  LKAS={}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}  FR={:03.0f}'.format(
        CS.out.steerFaultTemporary, CS.lkas_button_on, 0 < CS.lead_distance < 149, self.aq_value if self.longcontrol else CS.scc12["aReqValue"], v_future, v_future_a, CS.cruiseGapSet, self.timer1.sampleTime())
+    
     trace1.printf2( '{}'.format( str_log2 ) )
 
     # str_log3 = 'V/D/R/A/M/G={:.1f}/{:.1f}/{:.1f}/{:.2f}/{:.1f}/{:1.0f}'.format(CS.clu_Vanz, CS.lead_distance, CS.lead_objspd, CS.scc12["aReqValue"], self.stoppingdist, CS.cruiseGapSet)
