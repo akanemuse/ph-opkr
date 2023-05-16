@@ -49,7 +49,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.radarOffCan = True #ret.sccBus == -1
     ret.standStill = False
-    ret.openpilotLongitudinalControl = True #Params().get_bool("RadarDisable") or ret.sccBus == 2
+    ret.openpilotLongitudinalControl = False #Params().get_bool("RadarDisable") or ret.sccBus == 2
 
 
 
