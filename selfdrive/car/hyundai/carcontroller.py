@@ -545,15 +545,20 @@ class CarController():
       stopline = stoplines[-1]
 
     # start with a speed target
-    desired_speed = v_future_a
+    desired_speed = (v_future_a + v_future) * 0.5
 
-    # if things look good, give a little speed boost up
-    if e2eX_speed > 100:
-      desired_speed *= 1.2
+    # make an adjustment based on e2eX (>100 usually means good)
+    e2adj = e2eX_speed * 0.01
+    if e2adj > 1.2:
+      e2adj = 1.2
+    elif e2adj < 0.5:
+      e2adj = 0.5
+    desired_speed *= e2adj
 
-    # dont speed boost too much over v_future though
-    if desired_speed > v_future + 5:
-      desired_speed = v_future + 5
+    # don't go over this
+    max_long_speed = long_speed * 2.75
+    if desired_speed > max_long_speed:
+      desired_speed = max_long_speed
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.72 and clu11_speed < 45:
