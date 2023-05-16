@@ -115,7 +115,7 @@ class CarController():
 
     self.longcontrol = CP.openpilotLongitudinalControl
     #self.scc_live is true because CP.radarOffCan is False
-    self.scc_live = not CP.radarOffCan
+    self.scc_live = True #not CP.radarOffCan
 
     self.timer1 = tm.CTime1000("time")
 
@@ -515,6 +515,7 @@ class CarController():
     # can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * send_count) <--- send lots of presses at once
     # self.sm['longitudinalPlan'].e2eX[12] <--- something
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
+    # self.sm['radarState'].leadOne #lead data
 
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
@@ -530,6 +531,9 @@ class CarController():
     lead_0_ob = 0
     lead_1_ob = 0
     stopline = 0
+
+    l0prob = self.sm['radarState'].leadOne.modelProb
+    l0d = self.sm['radarState'].leadOne.dRel
 
     if len(e2eX_speeds) > 0:
       e2eX_speed = e2eX_speeds[-1]
@@ -583,7 +587,7 @@ class CarController():
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinesp))
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     # ok, apply cruise control button spamming to match desired speed
     if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20:
