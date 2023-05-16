@@ -47,7 +47,7 @@ class CarInterface(CarInterfaceBase):
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
 
-    ret.radarOffCan = False #ret.sccBus == -1
+    ret.radarOffCan = True #ret.sccBus == -1
     ret.standStill = False
     ret.openpilotLongitudinalControl = True #Params().get_bool("RadarDisable") or ret.sccBus == 2
 
