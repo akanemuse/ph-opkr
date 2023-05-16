@@ -547,19 +547,23 @@ class CarController():
       desired_speed *= e2adj
 
     # is there a lead?
+    # try to match 3 seconds behind it
     if l0prob > 0.5 and clu11_speed > 5:
+      lead_speed = clu11_speed + l0v * 2.23694
       speed_in_ms = clu11_speed * 0.44704
       lead_time = l0d / speed_in_ms
-      if lead_time < 3.0:
-        desired_speed *= lead_time / 3.0
-        desired_speed += l0v * 2.23694 #convert from ms to mph
+      max_lead_adj = lead_speed + (lead_time - 3.0)
+      if lead_time < 2.5: # coming in close, really slow down
+        max_lead_adj *= lead_time / 2.5
+      if desired_speed > max_lead_adj: # apply slow
+        desired_speed = max_lead_adj
 
     # if we are steering, slow down speed a little bit based on angle
-    #angle_adj = 1.0 - (abs(CS.out.steeringAngleDeg) / 120.0)
-    #desired_speed *= angle_adj
+    angle_adj = 1.0 - (abs(CS.out.steeringAngleDeg) / 140.0)
+    desired_speed *= angle_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
-    if stoplinesp > 0.72 and clu11_speed < 45:
+    if stoplinesp > 0.7 and clu11_speed < 45:
       desired_speed = 0
 
     # what is our difference between desired speed and target speed?
