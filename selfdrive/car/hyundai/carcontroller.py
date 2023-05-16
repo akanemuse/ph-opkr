@@ -547,7 +547,7 @@ class CarController():
       desired_speed *= e2adj
 
     # is there a lead?
-    if l0prob > 0.5:
+    if l0prob > 0.5 and clu11_speed > 5:
       speed_in_ms = clu11_speed * 0.44704
       lead_time = l0d / speed_in_ms
       if lead_time < 3.0:
