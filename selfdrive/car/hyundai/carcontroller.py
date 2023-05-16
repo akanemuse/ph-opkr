@@ -519,12 +519,13 @@ class CarController():
 
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
-    long_speeds = self.sm['longitudinalPlan'].speeds
-    cruise_targets = self.sm['longitudinalPlan'].cruiseTarget
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
     e2eX_speed = 0
-    long_speed = 0
-    cruise_target = 0
+
+    vcurv = path_plan.vCurvature
+    curv_rate = 0
+    if len(path_plan.curvatureRates) > 0:
+      curv_rate = path_plan.curvatureRates[0]
 
     l0prob = self.sm['radarState'].leadOne.modelProb
     l0d = self.sm['radarState'].leadOne.dRel
@@ -533,10 +534,6 @@ class CarController():
 
     if len(e2eX_speeds) > 0:
       e2eX_speed = e2eX_speeds[0]
-    if len(long_speeds) > 0:
-      long_speed = long_speeds[0]
-    if len(cruise_targets) > 0:
-      cruise_target = cruise_targets[0]
 
     # start with a speed target
     desired_speed = v_future
@@ -585,7 +582,7 @@ class CarController():
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + ", cR>" + "{:.2f}".format(curv_rate) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     # ok, apply cruise control button spamming to match desired speed
     if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20:
