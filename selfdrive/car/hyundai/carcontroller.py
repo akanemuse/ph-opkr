@@ -519,26 +519,30 @@ class CarController():
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
-    e2eX_speed = 0
 
-    vcurv = path_plan.vCurvature
-    curv_rate = 0
-    if len(path_plan.curvatureRates) > 0:
-      curv_rate = path_plan.curvatureRates[0]
+    # get biggest upcoming curve value
+    vcurv = 0
+    for curval in path_plan.curvatures:
+      acurval = abs(curval)
+      if acurval > vcurv:
+        vcurv = acurval
+    vcurv *= 100 #scale up
 
+    # lead car info
     l0prob = self.sm['radarState'].leadOne.modelProb
     l0d = self.sm['radarState'].leadOne.dRel
     l0v = self.sm['radarState'].leadOne.vRel
     l0y = self.sm['radarState'].leadOne.yRel
 
-    if len(e2eX_speeds) > 0:
-      e2eX_speed = e2eX_speeds[0]
-
     # start with a speed target
     desired_speed = v_future
 
-    # make an adjustment based on e2eX (<110 usually means something amiss)
-    e2adj = e2eX_speed / 110
+    # make an adjustment based on e2eX (<100 usually means something amiss)
+    e2eX_speed = 0
+    if len(e2eX_speeds) > 0:
+      e2eX_speed = e2eX_speeds[0]
+
+    e2adj = e2eX_speed / 100
     if e2adj < 1:
       desired_speed *= e2adj
 
@@ -555,10 +559,10 @@ class CarController():
         desired_speed = max_lead_adj
 
     # if we are steering, slow down speed a little bit based on angle
-    angle_adj = 1.0 - (abs(vcurv) / 0.08)
-    if angle_adj < 0.5:
-      angle_adj = 0.5
-    desired_speed *= angle_adj
+    #angle_adj = 1.0 - (abs(vcurv) / 0.08)
+    #if angle_adj < 0.5:
+    #  angle_adj = 0.5
+    #desired_speed *= angle_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.7 and clu11_speed < 45:
@@ -583,7 +587,7 @@ class CarController():
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + ", cR>" + "{:.2f}".format(curv_rate) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
