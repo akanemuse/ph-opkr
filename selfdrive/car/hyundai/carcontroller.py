@@ -521,48 +521,42 @@ class CarController():
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     long_speeds = self.sm['longitudinalPlan'].speeds
     cruise_targets = self.sm['longitudinalPlan'].cruiseTarget
-    lead_0_obs = self.sm['longitudinalPlan'].lead0Obstacle
-    lead_1_obs = self.sm['longitudinalPlan'].lead1Obstacle
-    stoplines = self.sm['longitudinalPlan'].stopLine
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
     e2eX_speed = 0
     long_speed = 0
     cruise_target = 0
-    lead_0_ob = 0
-    lead_1_ob = 0
-    stopline = 0
 
     l0prob = self.sm['radarState'].leadOne.modelProb
     l0d = self.sm['radarState'].leadOne.dRel
+    l0v = self.sm['radarState'].leadOne.vRel
+    l0y = self.sm['radarState'].leadOne.yRel
 
     if len(e2eX_speeds) > 0:
-      e2eX_speed = e2eX_speeds[-1]
+      e2eX_speed = e2eX_speeds[0]
     if len(long_speeds) > 0:
-      long_speed = long_speeds[-1]
+      long_speed = long_speeds[0]
     if len(cruise_targets) > 0:
-      cruise_target = cruise_targets[-1]
-    if len(lead_0_obs) > 0:
-      lead_0_ob = lead_0_obs[-1]
-    if len(lead_1_obs) > 0:
-      lead_1_ob = lead_1_obs[-1]
-    if len(stoplines) > 0:
-      stopline = stoplines[-1]
+      cruise_target = cruise_targets[0]
 
     # start with a speed target
-    desired_speed = (v_future_a + v_future) * 0.5
+    desired_speed = v_future
 
-    # make an adjustment based on e2eX (>100 usually means good)
-    e2adj = e2eX_speed * 0.01
-    if e2adj > 1.2:
-      e2adj = 1.2
-    elif e2adj < 0.5:
-      e2adj = 0.5
-    desired_speed *= e2adj
+    # make an adjustment based on e2eX (<110 usually means something amiss)
+    e2adj = e2eX_speed / 110
+    if e2adj < 1:
+      desired_speed *= e2adj
 
-    # don't go over this
-    max_long_speed = long_speed * 2.75
-    if desired_speed > max_long_speed:
-      desired_speed = max_long_speed
+    # is there a lead?
+    if l0prob > 0.5:
+      speed_in_ms = clu11_speed * 0.44704
+      lead_time = l0d / speed_in_ms
+      if lead_time < 3.0:
+        desired_speed *= lead_time / 3.0
+        desired_speed += l0v * 2.23694 #convert from ms to mph
+
+    # if we are steering, slow down speed a little bit based on angle
+    #angle_adj = 1.0 - (abs(CS.out.steeringAngleDeg) / 120.0)
+    #desired_speed *= angle_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.72 and clu11_speed < 45:
@@ -587,7 +581,7 @@ class CarController():
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
+    trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     # ok, apply cruise control button spamming to match desired speed
     if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20:
