@@ -522,11 +522,15 @@ class CarController():
 
     # get biggest upcoming curve value
     vcurv = 0
-    for curval in path_plan.curvatures:
-      acurval = abs(curval)
-      if acurval > vcurv:
-        vcurv = acurval
-    vcurv *= 100 #scale up
+    vcurv_avg = 0
+    if len(path_plan.curvatures) > 0:
+      for curval in path_plan.curvatures:
+        acurval = abs(curval)
+        vcurv_avg += acurval * 100
+        if acurval > vcurv:
+          vcurv = acurval
+      vcurv *= 100 #scale up
+      vcurv_avg /= len(path_plan.curvatures)
 
     # lead car info
     l0prob = self.sm['radarState'].leadOne.modelProb
@@ -587,7 +591,7 @@ class CarController():
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + "vCA>" + "{:.2f}".format(vcurv_avg) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
