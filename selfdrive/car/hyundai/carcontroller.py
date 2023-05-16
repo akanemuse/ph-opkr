@@ -544,11 +544,19 @@ class CarController():
     if len(stoplines) > 0:
       stopline = stoplines[-1]
 
-    # v_future seems like a good speed target    
-    desired_speed = v_future;
+    # start with a speed target
+    desired_speed = v_future_a
 
-    # about to hit a stop sign
-    if stoplinesp > 0.72:
+    # if things look good, give a little speed boost up
+    if e2eX_speed > 100:
+      desired_speed *= 1.2
+
+    # dont speed boost too much over v_future though
+    if desired_speed > v_future + 5:
+      desired_speed = v_future + 5
+
+    # about to hit a stop sign and we are going slow enough to handle it
+    if stoplinesp > 0.72 and clu11_speed < 45:
       desired_speed = 0
 
     # what is our difference between desired speed and target speed?
@@ -572,6 +580,7 @@ class CarController():
 
     trace1.printf1("CrT>" + "{:.2f}".format(cruise_target) + ", LS>" + "{:.2f}".format(long_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0B>" + "{:.2f}".format(lead_0_ob) + ", L1B>" + "{:.2f}".format(lead_1_ob) + ", Stl>" + "{:.2f}".format(stopline) + ", StP>" + "{:.2f}".format(stoplinesp))
 
+    # ok, apply cruise control button spamming to match desired speed
     if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
