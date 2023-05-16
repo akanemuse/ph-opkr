@@ -179,6 +179,8 @@ class CarController():
     self.cruise_init = False
     self.change_accel_fast = False
 
+    self.temp_disable_spamming = 0
+
     self.to_avoid_lkas_fault_enabled = self.params.get_bool("AvoidLKASFaultEnabled")
     self.to_avoid_lkas_fault_max_angle = int(self.params.get("AvoidLKASFaultMaxAngle", encoding="utf8"))
     self.to_avoid_lkas_fault_max_frame = int(self.params.get("AvoidLKASFaultMaxFrame", encoding="utf8"))
@@ -504,9 +506,6 @@ class CarController():
     if self.mode_change_timer > 0:
       self.mode_change_timer -= 1
 
-    if pcm_cancel_cmd and self.longcontrol:
-      can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL, clu11_speed, CS.CP.sccBus))
-
     # self.CP.vCruisekph <--- max speed from screen
     # CS.current_cruise_speed <--- WORKS
     # clu11_speed <--- current car speed WORKS
@@ -556,7 +555,9 @@ class CarController():
         desired_speed = max_lead_adj
 
     # if we are steering, slow down speed a little bit based on angle
-    angle_adj = 1.0 - (abs(CS.out.steeringAngleDeg) / 140.0)
+    angle_adj = 1.0 - (abs(vcurv) / 0.08)
+    if angle_adj < 0.5:
+      angle_adj = 0.5
     desired_speed *= angle_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
@@ -584,10 +585,17 @@ class CarController():
 
     trace1.printf1("vC>" + "{:.2f}".format(vcurv) + ", cR>" + "{:.2f}".format(curv_rate) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
-    # ok, apply cruise control button spamming to match desired speed
-    if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20:
+    # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
+    if CS.cruise_buttons != 0:
+      self.temp_disable_spamming = 3
+    if self.temp_disable_spamming > 0:
+      self.temp_disable_spamming -= 1
+
+    # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not already pressing buttons
+    if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
+        self.temp_disable_spamming = 3 #we disabled cruise, don't spam more cancels
       elif CS.current_cruise_speed > desired_speed:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
       elif CS.current_cruise_speed < desired_speed:
@@ -624,269 +632,6 @@ class CarController():
 
     if CS.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
-
-    # # tester present - w/ no response (keeps radar disabled)
-    # if CS.CP.openpilotLongitudinalControl:
-    #   if (frame % 100) == 0:
-    #     can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
-
-    # if frame % 2 == 0 and CS.CP.openpilotLongitudinalControl:
-    #   lead_visible = False
-    #   accel = actuators.accel if enabled else 0
-    #   jerk = clip(2.0 * (accel - CS.out.aEgo), -12.7, 12.7)
-    #   if accel < 0:
-    #     accel = interp(accel - CS.out.aEgo, [-1.0, -0.5], [2 * accel, accel])
-    #   accel = clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-    #   stopping = (actuators.longControlState == LongCtrlState.stopping)
-    #   set_speed_in_units = hud_speed * (CV.MS_TO_MPH if CS.clu11["CF_Clu_SPEED_UNIT"] == 1 else CV.MS_TO_KPH)
-    #   can_sends.extend(create_acc_commands(self.packer, enabled, accel, jerk, int(frame / 2), lead_visible, set_speed_in_units, stopping))
-
-    if self.radar_disabled_conf: #xps-genesis's way
-      if self.prev_cruiseButton != CS.cruise_buttons:  # gap change for RadarDisable
-        if CS.cruise_buttons == 3:
-          self.gapsettingdance -= 1
-        if self.gapsettingdance < 1:
-          self.gapsettingdance = 4
-        self.prev_cruiseButton = CS.cruise_buttons
-      if lead_visible:
-        self.lead_visible = True
-        self.lead_debounce = 50
-      elif self.lead_debounce > 0:
-        self.lead_debounce -= 1
-      else:
-        self.lead_visible = lead_visible
-      self.radarDisableOverlapTimer += 1
-      if self.radarDisableOverlapTimer >= 30:
-        self.radarDisableActivated = True
-        if 200 > self.radarDisableOverlapTimer > 36:
-          if frame % 41 == 0 or self.radarDisableOverlapTimer == 37:
-            can_sends.append(create_scc7d0(b'\x02\x10\x03\x00\x00\x00\x00\x00'))
-          elif frame % 43 == 0 or self.radarDisableOverlapTimer == 37:
-            can_sends.append(create_scc7d0(b'\x03\x28\x03\x01\x00\x00\x00\x00'))
-          elif frame % 19 == 0 or self.radarDisableOverlapTimer == 37:
-            can_sends.append(create_scc7d0(b'\x02\x10\x85\x00\x00\x00\x00\x00')) # off
-      else:
-        self.counter_init = False
-        can_sends.append(create_scc7d0(b'\x02\x10\x90\x00\x00\x00\x00\x00')) # on
-        can_sends.append(create_scc7d0(b'\x03\x29\x03\x01\x00\x00\x00\x00'))
-      if (frame % 50 == 0 or self.radarDisableOverlapTimer == 37) and self.radarDisableOverlapTimer >= 30:
-        can_sends.append(create_scc7d0(b'\x02\x3E\x00\x00\x00\x00\x00\x00'))
-      if self.radarDisableOverlapTimer > 200:
-        self.radarDisableOverlapTimer = 200
-      if self.lead_visible:
-        self.objdiststat = 1 if self.dRel < 25 else 2 if self.dRel < 40 else 3 if self.dRel < 60 else 4 if self.dRel < 80 else 5
-      else:
-        self.objdiststat = 0
-
-    setSpeed = round(set_speed * CV.MS_TO_KPH)
-
-    if (CS.CP.sccBus != 0 or self.radarDisableActivated) and self.counter_init and self.longcontrol:
-      if frame % 2 == 0:
-        if self.radar_disabled_conf:
-          self.fca11supcnt += 1
-          self.fca11supcnt %= 0xF
-          if self.fca11alivecnt == 1:
-            self.fca11inc = 0
-            if self.fca11cnt13 == 3:
-              self.fca11maxcnt = 0x9
-              self.fca11cnt13 = 0
-            else:
-              self.fca11maxcnt = 0xD
-              self.fca11cnt13 += 1
-          else:
-            self.fca11inc += 4
-          self.fca11alivecnt = self.fca11maxcnt - self.fca11inc
-          if CS.CP.fcaBus == -1:
-            can_sends.append(create_fca11(self.packer, CS.fca11, self.fca11alivecnt, self.fca11supcnt))
-
-        self.scc12cnt += 1
-        self.scc12cnt %= 0xF
-        self.scc11cnt += 1
-        self.scc11cnt %= 0x10
-        lead_objspd = CS.lead_objspd  # vRel (km/h)
-        aReqValue = CS.scc12["aReqValue"]
-        faccel = actuators.accel if c.active and not CS.out.gasPressed else 0
-        accel = actuators.oaccel if c.active and not CS.out.gasPressed else 0
-        stopping = (actuators.longControlState == LongCtrlState.stopping)
-        radar_recog = (0 < CS.lead_distance <= 149)
-        if self.joystick_debug_mode:
-          accel = actuators.accel
-        elif self.radar_helper_option == 0: # Vision Only
-          if 0 < CS.lead_distance <= 4.0: # use radar by force to stop anyway below 4.0m if lead car is detected.
-            stock_weight = interp(CS.lead_distance, [2.5, 4.0], [1., 0.])
-            accel = accel * (1. - stock_weight) + aReqValue * stock_weight
-          elif 0.1 < self.dRel < 6.0 and self.vRel < 0:
-            accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.9, 3.0], [1.0, 3.0]))
-            self.stopped = False
-          elif 0.1 < self.dRel < 6.0:
-            accel = min(-0.5, faccel*0.3)
-            if stopping:
-              self.stopped = True
-            else:
-              self.stopped = False
-          elif 0.1 < self.dRel:
-            self.stopped = False
-            pass
-          else:
-            self.stopped = False
-            accel = aReqValue
-        elif self.radar_helper_option == 1: # Radar Only
-          accel = aReqValue
-        elif self.radar_helper_option >= 2: # OPKR Custom(Radar+Vision), more smooth slowdown for cut-in or encountering being decellerated car.
-          if 0 < CS.lead_distance <= 149:
-            stock_weight = 0.0
-            self.smooth_start = False
-            self.vrel_delta_timer2 += 1
-            if self.vrel_delta_timer2 > 10:
-              self.vrel_delta_timer2 = 0
-              self.vrel_delta = (self.vRel*3.6) - self.vrel_delta_prev
-              self.vrel_delta_prev = self.vRel*3.6
-            if accel > 0 and self.change_accel_fast and CS.out.vEgo < 11.:
-              if aReqValue >= accel:
-                self.change_accel_fast = False
-              else:
-                accel = (aReqValue + accel) / 2
-            elif aReqValue < 0 and accel > 0 and accel - aReqValue > 0.3 and lead_objspd > 0 and CS.out.vEgo < 11.:
-              self.change_accel_fast = True
-            elif 0.1 < self.dRel < 6 and CS.lead_distance < 30.0 and lead_objspd > 0 and aReqValue - accel > 0.8: # in case radar detection works during vision breaking at stop.
-              accel = interp(aReqValue, [0.0, 1.8], [0.0, -0.7])
-              self.change_accel_fast = False
-            elif 0.1 < self.dRel <= 10.0 and CS.lead_distance - self.dRel >= 5.0 and aReqValue >= 0:
-              self.change_accel_fast = False
-              pass
-            elif aReqValue >= 0.0:
-              # accel = interp(CS.lead_distance, [14.0, 15.0], [max(accel, aReqValue, faccel), aReqValue])
-              dRel1 = self.dRel if self.dRel > 0 else CS.lead_distance
-              if ((CS.lead_distance - dRel1 > 3.0) or self.NC.cutInControl) and accel < 0:
-                if aReqValue < accel:
-                  accel = interp(lead_objspd, [-1, 0, 5], [aReqValue, aReqValue, accel])
-                else:
-                  accel = interp(self.dRel, [0, 40], [accel*0.1, accel*0.7])
-              else:
-                accel = aReqValue
-            elif aReqValue < 0.0 and CS.lead_distance < self.stoppingdist and accel >= aReqValue and lead_objspd <= 0 and self.stopping_dist_adj_enabled:
-              if CS.lead_distance < 1.8:
-                accel = self.accel - (DT_CTRL * 4.0)
-              elif CS.lead_distance < self.stoppingdist:
-                accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.05, 1.0, 5.0]))
-            elif aReqValue < 0.0:
-              dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
-              if ((CS.lead_distance - dRel2 > 3.0) or self.NC.cutInControl) and accel < 0 and not self.ed_rd_diff_on:
-                self.ed_rd_diff_on = True
-                self.ed_rd_diff_on_timer = min(400, int(self.dRel * 5))
-                self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 5))
-                stock_weight = 1.0
-              elif ((dRel2 - CS.lead_distance > 3.0) or self.NC.cutInControl) and not self.ed_rd_diff_on:
-                self.ed_rd_diff_on = True
-                self.ed_rd_diff_on_timer = min(400, int(self.dRel * 10))
-                self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 10))
-                stock_weight = 1.0
-              elif self.ed_rd_diff_on_timer: # damping btw ED and RD for few secs.
-                stock_weight = interp(self.ed_rd_diff_on_timer, [0, self.ed_rd_diff_on_timer2], [0.1, 1.0])
-                self.ed_rd_diff_on_timer -= 1
-                if aReqValue <= accel:
-                  stock_weight = 1.0
-              else:
-                if not self.NC.cutInControl:
-                  self.ed_rd_diff_on = False
-                self.ed_rd_diff_on_timer = 0
-                self.ed_rd_diff_on_timer2 = 0
-                stock_weight = interp(abs(lead_objspd), [1.0, 5.0, 10.0, 20.0, 50.0], [0.15, 0.3, 1.0, 0.9, 0.2])
-                if aReqValue <= accel:
-                  self.vrel_delta_timer = 0
-                  self.vrel_delta_timer3 = 0
-                  stock_weight = min(1.0, interp(CS.out.vEgo, [7.0, 30.0], [stock_weight, stock_weight*5.0]))
-                  if not self.stopping_dist_adj_enabled:
-                    stock_weight = min(1.0, interp(CS.lead_distance, [0.0, 10.0], [stock_weight*5.0, stock_weight]))
-                elif aReqValue > accel:
-                  if self.vrel_delta < -5 and self.vrel_delta_timer == 0:
-                    self.vrel_delta_timer = min(400, int(self.dRel*10))
-                    self.vrel_delta_timer3 = min(400, int(self.dRel*10))
-                    stock_weight = 1.0
-                  elif self.vrel_delta_timer > 0:
-                    self.vrel_delta_timer -= 1
-                    stock_weight = interp(self.vrel_delta_timer, [0, self.vrel_delta_timer3], [0.1, 1.0])
-                  else:
-                    self.vrel_delta_timer = 0
-                    self.vrel_delta_timer3 = 0
-                    stock_weight = interp(abs(lead_objspd), [1.0, 10.0], [1.0, 0.0])
-              accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
-              accel = min(accel, -0.5) if CS.lead_distance <= 4.5 and not CS.out.standstill else accel
-            # elif aReqValue < 0.0:
-            #   stock_weight = interp(CS.lead_distance, [6.0, 10.0, 18.0, 25.0, 32.0], [1.0, 0.85, 1.0, 0.4, 1.0])
-            #   accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
-            else:
-              stock_weight = 0.0
-              self.change_accel_fast = False
-              accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
-          elif 0.1 < self.dRel < 6.0 and int(self.vRel*3.6) < 0:
-            accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.9, 3.0], [1.0, 3.0]))
-            self.stopped = False
-          elif 0.1 < self.dRel < 6.0:
-            accel = min(-0.5, faccel*0.3)
-            if stopping:
-              self.stopped = True
-            else:
-              self.stopped = False
-          elif 0.1 < self.dRel < 80:
-            self.stopped = False
-            vvrel = self.vRel*3.6
-            vvrel_weight = interp(vvrel, [-35, 0], [0.2, 0.4])
-            if accel <= 0 and aReqValue <= 0:
-              accel = (accel*(1-vvrel_weight)) + (aReqValue*vvrel_weight)
-            elif accel <= 0 and aReqValue > 0 and CS.clu_Vanz > 30:
-              accel = (aReqValue*(1-vvrel_weight)) + (accel*vvrel_weight)
-            else:
-              pass
-          else:
-            self.stopped = False
-            if self.stopsign_enabled:
-              if self.sm['longitudinalPlan'].longitudinalPlanSource == LongitudinalPlanSource.stop:
-                self.smooth_start = True
-                accel = faccel if faccel <= 0 else faccel*0.5
-              elif self.smooth_start and CS.clu_Vanz < setSpeed:
-                accel = interp(CS.clu_Vanz, [0, setSpeed], [faccel, aReqValue])
-              else:
-                self.smooth_start = False
-                accel = aReqValue
-            else:
-              accel = aReqValue
-        else:
-          self.stopped = False
-          stock_weight = 0.
-
-        if self.stock_safety_decel_enabled:
-          if CS.scc11["Navi_SCC_Camera_Act"] == 2 and accel > aReqValue:
-            accel = aReqValue
-        accel = clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-        self.aq_value = accel
-        self.aq_value_raw = aReqValue
-        can_sends.append(create_scc11(self.packer, frame, set_speed, lead_visible, self.scc_live, self.dRel, self.vRel, self.yRel, 
-         self.car_fingerprint, CS.out.vEgo * CV.MS_TO_KPH, self.acc_standstill, self.gapsettingdance, self.stopped, radar_recog, CS.scc11))
-        if (CS.brake_check or CS.cancel_check) and self.car_fingerprint != CAR.NIRO_EV_DE:
-          can_sends.append(create_scc12(self.packer, accel, enabled, self.scc_live, CS.out.gasPressed, 1, 
-           CS.out.stockAeb, self.car_fingerprint, CS.out.vEgo * CV.MS_TO_KPH, self.stopped, self.acc_standstill, radar_recog, self.scc12_cnt, CS.scc12))
-        else:
-          can_sends.append(create_scc12(self.packer, accel, enabled, self.scc_live, CS.out.gasPressed, CS.out.brakePressed, 
-           CS.out.stockAeb, self.car_fingerprint, CS.out.vEgo * CV.MS_TO_KPH, self.stopped, self.acc_standstill, radar_recog, self.scc12_cnt, CS.scc12))
-        self.scc12_cnt += 1
-        can_sends.append(create_scc14(self.packer, enabled, CS.scc14, CS.out.stockAeb, lead_visible, self.dRel, 
-         CS.out.vEgo, self.acc_standstill, self.car_fingerprint))
-        self.accel = accel
-      if frame % 20 == 0:
-        if self.radar_disabled_conf:
-          if CS.CP.fcaBus == -1:
-            can_sends.append(create_fca12(self.packer))
-        can_sends.append(create_scc13(self.packer, CS.scc13))
-      if frame % 50 == 0:
-        can_sends.append(create_scc42a(self.packer))
-    elif (CS.CP.sccBus != 0 or self.radarDisableActivated) and self.longcontrol:
-      if self.radar_disabled_conf:
-        self.fca11alivecnt = CS.fca11init["CR_FCA_Alive"]
-        self.fca11supcnt = CS.fca11init["Supplemental_Counter"]
-      self.counter_init = True
-      self.scc12cnt = CS.scc12init["CR_VSM_Alive"]
-      self.scc11cnt = CS.scc11init["AliveCounterACC"]
 
     str_log1 = 'MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}  FR={:03.0f}'.format(
       CS.out.cruiseState.modeSel, CS.CP.mdpsBus, CS.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), v_future, self.p.STEER_MAX, self.p.STEER_DELTA_UP, self.p.STEER_DELTA_DOWN, self.timer1.sampleTime())
