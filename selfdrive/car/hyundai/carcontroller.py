@@ -113,7 +113,7 @@ class CarController():
     self.stopped = False
     self.stoppingdist = float(Decimal(self.params.get("StoppingDist", encoding="utf8"))*Decimal('0.1'))
 
-    self.longcontrol = CP.openpilotLongitudinalControl
+    self.longcontrol = False #CP.openpilotLongitudinalControl
     #self.scc_live is true because CP.radarOffCan is False
     self.scc_live = not CP.radarOffCan
 
