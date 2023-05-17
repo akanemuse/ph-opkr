@@ -562,11 +562,10 @@ class CarController():
       if desired_speed > max_lead_adj: # apply slow
         desired_speed = max_lead_adj
 
-    # if we are steering, slow down speed a little bit based on angle
-    #angle_adj = 1.0 - (abs(vcurv) / 0.08)
-    #if angle_adj < 0.5:
-    #  angle_adj = 0.5
-    #desired_speed *= angle_adj
+    # if we are apporaching a turn, slow down in preparation
+    if vcurv > 0.4:
+      vcurv_adj = 1.0 - ((vcurv - 0.4) / 4.0)
+      desired_speed *= vcurv_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.7 and clu11_speed < 45:
