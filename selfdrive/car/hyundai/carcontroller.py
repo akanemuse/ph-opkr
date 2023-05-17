@@ -4,7 +4,7 @@ from common.numpy_fast import clip, interp
 from common.conversions import Conversions as CV
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfahda_mfc, create_hda_mfc, \
-                                             create_scc11, create_scc12, create_scc13, create_scc14, \
+                                             create_scc11, create_scc12, create_scc13, create_scc14, create_cruise_set, \
                                              create_scc42a, create_scc7d0, create_mdps12, create_fca11, create_fca12
 from selfdrive.car.hyundai.values import Buttons, CarControllerParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
@@ -603,12 +603,15 @@ class CarController():
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
-      elif CS.current_cruise_speed > desired_speed:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+      else:
+        can_sends.append(create_cruise_set(self.packer, CS.eems11, desired_speed))
         self.temp_disable_spamming = 2 # slow our presses to prevent blips
-      elif CS.current_cruise_speed < desired_speed:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
-        self.temp_disable_spamming = 2 # slow our presses to prevent blips
+      #elif CS.current_cruise_speed > desired_speed:
+      #  can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+      #  self.temp_disable_spamming = 2 # slow our presses to prevent blips
+      #elif CS.current_cruise_speed < desired_speed:
+      #  can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
+      #  self.temp_disable_spamming = 2 # slow our presses to prevent blips
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
@@ -642,8 +645,8 @@ class CarController():
     if CS.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
-    str_log2 = 'MDPS={}  LKAS={}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}  FR={:03.0f}'.format(
-       CS.out.steerFaultTemporary, CS.lkas_button_on, 0 < CS.lead_distance < 149, self.aq_value if self.longcontrol else CS.scc12["aReqValue"], v_future, v_future_a, CS.cruiseGapSet, self.timer1.sampleTime())
+    str_log2 = 'MDPS={}  LKAS={}  LEAD={}   VF={:03.0f}/{:03.0f}  CG={:1.0f}  FR={:03.0f}'.format(
+       CS.out.steerFaultTemporary, CS.lkas_button_on, 0 < CS.lead_distance < 149, v_future, v_future_a, CS.cruiseGapSet, self.timer1.sampleTime())
     
     trace1.printf2( '{}'.format( str_log2 ) )
 
