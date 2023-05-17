@@ -519,6 +519,9 @@ class CarController():
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
+    max_speed_in_mph = self.CP.vCruisekph * 0.621371
+    if max_speed_in_mph < 22: # have max speed just slightly over cruise so it doesn't just disable it immediately if no good reason to
+      max_speed_in_mph = 22
 
     # get biggest upcoming curve value
     vcurv = 0
@@ -538,8 +541,10 @@ class CarController():
     l0v = self.sm['radarState'].leadOne.vRel
     l0y = self.sm['radarState'].leadOne.yRel
 
-    # start with a speed target
+    # start with a speed target, capped at max speed
     desired_speed = v_future
+    if desired_speed > max_speed_in_mph:
+      desired_speed = max_speed_in_mph
 
     # make an adjustment based on e2eX (<100 usually means something amiss)
     e2eX_speed = 0
@@ -577,20 +582,13 @@ class CarController():
     # apply a spam overpress to hurry up cruise control
     desired_speed += speed_diff * 0.5
 
-    # dont go over max speed, which should be slightly over cruise control min
-    # so it doesn't just disable it immediately
-    max_speed_in_mph = self.CP.vCruisekph * 0.621371
-    if max_speed_in_mph < 22:
-      max_speed_in_mph = 22
-
+    # sanity checks
     if desired_speed > max_speed_in_mph:
       desired_speed = max_speed_in_mph
-
-    # sanity check
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + "vCA>" + "{:.2f}".format(vcurv_avg) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + "DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", L0y>" + "{:.2f}".format(l0y) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
