@@ -565,6 +565,8 @@ class CarController():
       lead_speed = clu11_speed + l0v * 2.23694
       speed_in_ms = clu11_speed * 0.44704
       lead_time = l0d / speed_in_ms
+      if lead_time > 6.0: # cap lead time to 6 seconds so we plan to be closer to this lead car
+        lead_time = 6.0
       max_lead_adj = lead_speed + (lead_time - 3.0)
       if lead_time < 3.0 and lead_speed <= clu11_speed: # coming in close and going slower than us, slow down more abruptly
         additional_slowing = 1.0 - ((2.0 / (lead_time + 0.75)) - 0.533)
@@ -600,11 +602,13 @@ class CarController():
     if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
-        self.temp_disable_spamming = 5 #we disabled cruise, don't spam more cancels
+        self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
       elif CS.current_cruise_speed > desired_speed:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+        self.temp_disable_spamming = 2 # slow our presses to prevent blips
       elif CS.current_cruise_speed < desired_speed:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
+        self.temp_disable_spamming = 2 # slow our presses to prevent blips
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
