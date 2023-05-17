@@ -365,11 +365,16 @@ class CarState(CarStateBase):
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = copy.copy(cp_cam.vl["LKAS11"])
     self.clu11 = copy.copy(cp.vl["CLU11"])
-    self.eems11 = copy.copy(cp.vl["E_EMS11"])
+    self.scc11 = copy.copy(cp_scc.vl["SCC11"])
+    self.scc12 = copy.copy(cp_scc.vl["SCC12"])
+    self.scc13 = copy.copy(cp_scc.vl["SCC13"])
+    self.scc14 = copy.copy(cp_scc.vl["SCC14"])
     if self.rd_conf:
       self.fca11 = copy.copy(cp_fca.vl["FCA11"])
     self.mdps12 = copy.copy(cp_mdps.vl["MDPS12"])
 
+    self.scc11init = copy.copy(cp.vl["SCC11"])
+    self.scc12init = copy.copy(cp.vl["SCC12"])
     if self.rd_conf:
       self.fca11init = copy.copy(cp.vl["FCA11"])
 
