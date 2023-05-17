@@ -4,7 +4,7 @@ from common.numpy_fast import clip, interp
 from common.conversions import Conversions as CV
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfahda_mfc, create_hda_mfc, \
-                                             create_scc11, create_scc12, create_scc13, create_scc14, \
+                                             create_scc11, create_scc12, create_scc13, create_scc14, create_cpress, \
                                              create_scc42a, create_scc7d0, create_mdps12, create_fca11, create_fca12
 from selfdrive.car.hyundai.values import Buttons, CarControllerParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
@@ -601,14 +601,12 @@ class CarController():
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not already pressing buttons
     if abs(CS.current_cruise_speed - desired_speed) >= 0.5 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
+        can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
       elif CS.current_cruise_speed > desired_speed:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) #slow cruise
-        self.temp_disable_spamming = 2 # slow our presses to prevent blips
+        can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
       elif CS.current_cruise_speed < desired_speed:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
-        self.temp_disable_spamming = 2 # slow our presses to prevent blips
+        can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
