@@ -551,9 +551,8 @@ class CarController():
       desired_speed *= e2adj
 
     # if we are apporaching a turn, slow down in preparation
-    if vcurv > 0.4:
-      vcurv_adj = 1.0 - ((vcurv - 0.4) / 4.0)
-      desired_speed *= vcurv_adj
+    vcurv_adj = 1.0 - (vcurv * 0.25)
+    desired_speed *= vcurv_adj
 
     # is there a lead?
     # try to match 3 seconds behind it
