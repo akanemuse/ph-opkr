@@ -599,7 +599,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not already pressing buttons
-    if abs(CS.current_cruise_speed - desired_speed) >= 1 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
+    if abs(CS.current_cruise_speed - desired_speed) >= 0.5 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
