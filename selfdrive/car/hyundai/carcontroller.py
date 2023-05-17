@@ -557,8 +557,9 @@ class CarController():
       speed_in_ms = clu11_speed * 0.44704
       lead_time = l0d / speed_in_ms
       max_lead_adj = lead_speed + (lead_time - 3.0)
-      if lead_time < 3.0: # coming in close, really slow down
-        max_lead_adj *= lead_time / 3.0
+      if lead_time < 3.0 and lead_speed <= clu11_speed: # coming in close and going slower than us, slow down more abruptly
+        additional_slowing = 1.0 - ((2.0 / (lead_time + 0.75)) - 0.533)
+        max_lead_adj *= additional_slowing
       if desired_speed > max_lead_adj: # apply slow
         desired_speed = max_lead_adj
 
