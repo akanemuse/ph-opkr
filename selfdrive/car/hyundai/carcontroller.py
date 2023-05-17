@@ -550,6 +550,11 @@ class CarController():
     if e2adj < 1:
       desired_speed *= e2adj
 
+    # if we are apporaching a turn, slow down in preparation
+    if vcurv > 0.4:
+      vcurv_adj = 1.0 - ((vcurv - 0.4) / 4.0)
+      desired_speed *= vcurv_adj
+
     # is there a lead?
     # try to match 3 seconds behind it
     if l0prob > 0.5 and clu11_speed > 5:
@@ -562,11 +567,6 @@ class CarController():
         max_lead_adj *= additional_slowing
       if desired_speed > max_lead_adj: # apply slow
         desired_speed = max_lead_adj
-
-    # if we are apporaching a turn, slow down in preparation
-    if vcurv > 0.4:
-      vcurv_adj = 1.0 - ((vcurv - 0.4) / 4.0)
-      desired_speed *= vcurv_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.7 and clu11_speed < 45:
