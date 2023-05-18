@@ -98,8 +98,8 @@ def update_v_cruise(v_cruise_kph, buttonEvents, button_timers, enabled, metric):
     # apply limits
     if current_mph > 80:
       current_mph = 80
-    elif current_mph < 20:
-      current_mph = 20
+    elif current_mph < 25:
+      current_mph = 25
 
     v_cruise_kph = round(current_mph * 1.60934) # round back to kph
 
