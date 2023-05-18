@@ -66,9 +66,10 @@ def update_v_cruise(v_cruise_kph, buttonEvents, button_timers, enabled, metric):
 
   button_type = None
 
-  v_cruise_delta = 5 * CV.MPH_TO_KPH
-  v_cruise_delta_minor = 2 * CV.MPH_TO_KPH
+  # convert to mph for processing
+  current_mph = round(v_cruise_kph * 0.621371)
 
+  # grab buttons with legacy long press code we dont actually use anymore
   for b in buttonEvents:
     if b.type.raw in button_timers and not b.pressed:
       if button_timers[b.type.raw] > CRUISE_LONG_PRESS:
@@ -81,19 +82,26 @@ def update_v_cruise(v_cruise_kph, buttonEvents, button_timers, enabled, metric):
         button_type = k
         break
 
+  # was a button pressed?
   if button_type:
     if button_type == car.CarState.ButtonEvent.Type.accelCruise:
-      if v_cruise_kph > 69 * CV.MPH_TO_KPH: # make smaller changes up when at high speeds
-        v_cruise_kph += v_cruise_delta_minor
+      if current_mph >= 70: # make smaller changes up when at high speeds
+        current_mph += 2
       else:
-        v_cruise_kph += v_cruise_delta
+        current_mph += 5
     elif button_type == car.CarState.ButtonEvent.Type.decelCruise:
-      if v_cruise_kph > 71 * CV.MPH_TO_KPH:
-        v_cruise_kph = 70 * CV.MPH_TO_KPH # hop right down to 70 when pressing slow above 70
+      if current_mph > 70:
+        current_mph = 70 # hop right down to 70 when pressing slow above 70
       else:
-        v_cruise_kph -= v_cruise_delta
+        current_mph -= 5
     
-    v_cruise_kph = clip(round(v_cruise_kph, 1), V_CRUISE_MIN, V_CRUISE_MAX)
+    # apply limits
+    if current_mph > 80:
+      current_mph = 80
+    elif current_mph < 20:
+      current_mph = 20
+
+    v_cruise_kph = round(current_mph * 1.60934) # round back to kph
 
   return v_cruise_kph
 
