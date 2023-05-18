@@ -15,7 +15,7 @@ else:
   DESIRED_CURVATURE_LIMIT = DT_MDL
 
 # kph
-V_CRUISE_MAX = 160
+V_CRUISE_MAX = 128.748 # 80 mph
 V_CRUISE_MIN = 30
 V_CRUISE_DELTA = 10
 V_CRUISE_ENABLE_MIN = 30
@@ -64,10 +64,10 @@ def update_v_cruise(v_cruise_kph, buttonEvents, button_timers, enabled, metric):
   if not enabled:
     return v_cruise_kph
 
-  long_press = False
   button_type = None
 
   v_cruise_delta = 5 * CV.MPH_TO_KPH
+  v_cruise_delta_minor = 2 * CV.MPH_TO_KPH
 
   for b in buttonEvents:
     if b.type.raw in button_timers and not b.pressed:
@@ -79,15 +79,20 @@ def update_v_cruise(v_cruise_kph, buttonEvents, button_timers, enabled, metric):
     for k in button_timers.keys():
       if button_timers[k] and button_timers[k] % CRUISE_LONG_PRESS == 0:
         button_type = k
-        long_press = True
         break
 
   if button_type:
-    v_cruise_delta = v_cruise_delta
-    if long_press and v_cruise_kph % v_cruise_delta != 0: # partial interval
-      v_cruise_kph = CRUISE_NEAREST_FUNC[button_type](v_cruise_kph / v_cruise_delta) * v_cruise_delta
-    else:
-      v_cruise_kph += v_cruise_delta * CRUISE_INTERVAL_SIGN[button_type]
+    if button_type == car.CarState.ButtonEvent.Type.accelCruise:
+      if v_cruise_kph > 69 * CV.MPH_TO_KPH: # make smaller changes up when at high speeds
+        v_cruise_kph += v_cruise_delta_minor
+      else:
+        v_cruise_kph += v_cruise_delta
+    elif button_type == car.CarState.ButtonEvent.Type.decelCruise:
+      if v_cruise_kph > 71 * CV.MPH_TO_KPH:
+        v_cruise_kph = 70 * CV.MPH_TO_KPH # hop right down to 70 when pressing slow above 70
+      else:
+        v_cruise_kph -= v_cruise_delta
+    
     v_cruise_kph = clip(round(v_cruise_kph, 1), V_CRUISE_MIN, V_CRUISE_MAX)
 
   return v_cruise_kph

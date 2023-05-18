@@ -550,9 +550,9 @@ class Controls:
     if self.v_cruise_kph_set_timer > 0:
       self.v_cruise_kph_set_timer -= 1
 
-    if CS.cruiseState.speed > 0:
-      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.button_timers, self.enabled, IS_KPH)
-      self.CP.vCruisekph = self.v_cruise_kph
+    #if CS.cruiseState.speed > 0:
+    self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.button_timers, self.enabled, IS_KPH)
+    self.CP.vCruisekph = self.v_cruise_kph
 
     # decrement the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
