@@ -88,20 +88,20 @@ def update_v_cruise(v_cruise_kph, buttonEvents, button_timers, enabled, metric):
       if current_mph >= 70: # make smaller changes up when at high speeds
         current_mph += 2
       else:
-        current_mph += 5
+        current_mph += 4
     elif button_type == car.CarState.ButtonEvent.Type.decelCruise:
       if current_mph > 70:
         current_mph = 70 # hop right down to 70 when pressing slow above 70
       else:
-        current_mph -= 5
+        current_mph -= 4
     
     # apply limits
     if current_mph > 80:
       current_mph = 80
-    elif current_mph < 25:
-      current_mph = 25
+    elif current_mph < 26:
+      current_mph = 26
 
-    v_cruise_kph = round(current_mph * 1.60934) # round back to kph
+    v_cruise_kph = current_mph * 1.60934 # back to kph
 
   return v_cruise_kph
 

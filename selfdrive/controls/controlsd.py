@@ -174,7 +174,7 @@ class Controls:
     self.active = False
     self.can_rcv_error = False
     self.soft_disable_timer = 0
-    self.v_cruise_kph = 65
+    self.v_cruise_kph = 67.5924 # 42 mph default
     self.v_cruise_kph_last = 0
     self.mismatch_counter = 0
     self.cruise_mismatch_counter = 0
@@ -550,9 +550,9 @@ class Controls:
     if self.v_cruise_kph_set_timer > 0:
       self.v_cruise_kph_set_timer -= 1
 
-    if CS.cruiseState.speed > 0:
-      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.button_timers, self.enabled, IS_KPH)
-      self.CP.vCruisekph = self.v_cruise_kph
+    #if CS.cruiseState.speed > 0:
+    self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.button_timers, self.enabled, IS_KPH)
+    self.CP.vCruisekph = self.v_cruise_kph
 
     # decrement the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
@@ -613,7 +613,7 @@ class Controls:
           else:
             self.state = State.enabled
           self.current_alert_types.append(ET.ENABLE)
-          self.v_cruise_kph = 65 #initialize_v_cruise(CS.vEgo, CS.buttonEvents, self.v_cruise_kph_last)
+          self.v_cruise_kph = 67.5924 # 42mph default
           self.v_cruise_kph_last = 0
 
     # Check if actuators are enabled
