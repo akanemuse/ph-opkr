@@ -556,9 +556,7 @@ class CarController():
       desired_speed *= e2adj
 
     # if we are apporaching a turn, slow down in preparation
-    vcurv_adj = 1.0 - (vcurv * 0.25)
-    if vcurv_adj < 0.6: # cap maximum slowing from turn
-      vcurv_adj = 0.6
+    vcurv_adj = 3.5 / (vcurv + 3.5)
     desired_speed *= vcurv_adj
 
     # is there a lead?
