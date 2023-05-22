@@ -557,6 +557,8 @@ class CarController():
 
     # if we are apporaching a turn, slow down in preparation
     vcurv_adj = 1.0 - (vcurv * 0.25)
+    if vcurv_adj < 0.6: # cap maximum slowing from turn
+      vcurv_adj = 0.6
     desired_speed *= vcurv_adj
 
     # is there a lead?
@@ -565,10 +567,10 @@ class CarController():
       lead_speed = clu11_speed + l0v * 2.23694
       speed_in_ms = clu11_speed * 0.44704
       lead_time = l0d / speed_in_ms
-      max_lead_adj = lead_speed + (lead_time - 3.0)
-      if lead_time < 3.0 and lead_speed <= clu11_speed: # coming in close and going slower than us, slow down more abruptly
-        additional_slowing = 1.0 - ((2.0 / (lead_time + 0.75)) - 0.533)
-        max_lead_adj *= additional_slowing
+      lead_time_ideal_offset = lead_time - 3.0
+      if lead_time_ideal_offset < 0: # slow down a bit faster if <3 seconds from lead
+        lead_time_ideal_offset *= 4
+      max_lead_adj = lead_speed + lead_time_ideal_offset
       if desired_speed > max_lead_adj: # apply slow
         desired_speed = max_lead_adj
 
