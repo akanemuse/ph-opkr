@@ -20,6 +20,8 @@ import common.CTime1000 as tm
 from random import randint
 from decimal import Decimal
 
+import math
+
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 LongitudinalPlanSource = log.LongitudinalPlan.LongitudinalPlanSource
@@ -516,6 +518,15 @@ class CarController():
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
     # self.sm['radarState'].leadOne #lead data
 
+    # TODO: still get random blips and even had a "CAN ERROR: Check connections" appear, causing a disengagement
+    # - Discord user suggests capturing the error with 'tmux a' ssh command live
+    # - Discord user thinks it is a "CAN TIMEOUT" happening
+    # - can I just restart Open Pilot automatically if this error happens?
+    #   - how about just showing a warning instead of disabling? hard to know side effects...
+    # - video showed constant desired_speed before "can error", so cruise buttons were probably not being sent
+    #   - but errors like CAN ERROR are usually not immediate... compare timing with older videos that had CAN ERRORS with button presses
+    #   - might still be caused by pressing buttons too fast and CAN ERROR was delayed (e.g. when TIMEOUT was reached)
+
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
@@ -595,15 +606,24 @@ class CarController():
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
+    cruise_difference = abs(CS.current_cruise_speed - desired_speed)
+    cruise_difference_max = math.ceil(cruise_difference)
+    if cruise_difference_max > 4:
+      cruise_difference_max = 4 # do a max of presses at a time
+
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not taking a break
-    if abs(CS.current_cruise_speed - desired_speed) >= 0.5 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
+    if cruise_difference >= 0.666 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
       elif CS.current_cruise_speed > desired_speed:
-        can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+        for x in range(cruise_difference_max):
+          can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+        self.temp_disable_spamming = 2 # take a break
       elif CS.current_cruise_speed < desired_speed:
-        can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
+        for x in range(cruise_difference_max):
+          can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
+        self.temp_disable_spamming = 2 # take a break
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
