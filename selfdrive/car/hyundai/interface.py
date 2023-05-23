@@ -60,7 +60,7 @@ class CarInterface(CarInterfaceBase):
     ret.smoothSteer.driverAngleWait = float( Params().get("OpkrDriverAngleWait", encoding="utf8") )  #0.001
     #ret.steeringPressed
     #ret.maxSteeringAngleDeg = 90
-    ret.minSteerSpeed = 16.67 # m/s
+    ret.minSteerSpeed = 0 # kona ev steers to zero
 
     # Most Hyundai car ports are community features for now
     ret.pcmCruise = False #not ret.radarOffCan
@@ -326,8 +326,8 @@ class CarInterface(CarInterfaceBase):
     #  events.add(EventName.steerTempUnavailable)
     # if self.ufc_mode_enabled and EventName.pedalPressed in events.events:
     #   events.events.remove(EventName.pedalPressed)
-    if ret.vEgo < self.CP.minSteerSpeed and self.no_mdps_mods:
-      events.add(car.CarEvent.EventName.belowSteerSpeed)
+    #if ret.vEgo < self.CP.minSteerSpeed and self.no_mdps_mods:
+    #  events.add(car.CarEvent.EventName.belowSteerSpeed)
     #if self.CC.need_brake and not self.CC.longcontrol:
     #  events.add(EventName.needBrake)
     if not self.CC.lkas_temp_disabled:
