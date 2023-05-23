@@ -524,7 +524,7 @@ class CarController():
     max_speed_in_mph = self.CP.vCruisekph * 0.621371
     if max_speed_in_mph < 22: # have max speed just slightly over cruise so it doesn't just disable it immediately if no good reason to
       max_speed_in_mph = 22
-    driver_doing_speed = CS.out.brakePressed or CS.out.gasPressed
+    driver_doing_speed = CS.out.brakeLights or CS.out.gasPressed
 
     # get biggest upcoming curve value
     vcurv = 0

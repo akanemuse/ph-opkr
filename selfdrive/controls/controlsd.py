@@ -550,9 +550,21 @@ class Controls:
     if self.v_cruise_kph_set_timer > 0:
       self.v_cruise_kph_set_timer -= 1
 
-    if CS.cruiseState.speed > 0:
+    # automatically set desired top speed if pressing the gas or brake
+    # in intervals of 4, as that is what our button presses do
+    if CS.brakeLights or CS.gasPressed:
+      set_to_mph = 26
+      current_mph = CS.vEgo * 2.23694 # convert m/s -> mph
+      if current_mph > 26:
+        interval = math.floor((current_mph - 26) / 4)
+        set_to_mph = 26 + interval * 4
+      if set_to_mph > 70:
+        set_to_mph = 70 # cap autospeed setting max
+      self.v_cruise_kph = set_to_mph * 1.60934 # convert back to mph
+    elif CS.cruiseState.speed > 0:
+      # not pressing gas/brake, set speed based on button presses if cruise is enabled
       self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.button_timers, self.enabled, IS_KPH)
-      self.CP.vCruisekph = self.v_cruise_kph
+    self.CP.vCruisekph = self.v_cruise_kph
 
     # decrement the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
