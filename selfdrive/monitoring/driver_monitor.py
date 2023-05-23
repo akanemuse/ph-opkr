@@ -195,6 +195,10 @@ class DriverStatus():
       self.active_monitoring_mode = False
 
   def _is_driver_distracted(self, pose, blink):
+
+    # disable driver monitoring
+    return DistractedType.NOT_DISTRACTED
+
     self.second2 += self.settings._DT_DMON
     if self.second2 > 1.0:
       self.monitoring_mode = Params().get_bool("OpkrMonitoringMode")
@@ -306,6 +310,10 @@ class DriverStatus():
       self.hi_stds = 0
 
   def update(self, events, driver_engaged, ctrl_active, standstill, car_speed):
+
+    # disable driver monitoring
+    return;
+
     if (driver_engaged and self.awareness > 0) or not ctrl_active:
       # reset only when on disengagement if red reached
       self.awareness = 1.

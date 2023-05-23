@@ -5,7 +5,7 @@ import cereal.messaging as messaging
 from selfdrive.controls.lib.events import Events
 from selfdrive.monitoring.driver_monitor import DriverStatus
 from selfdrive.locationd.calibrationd import Calibration
-
+import time
 
 def dmonitoringd_thread(sm=None, pm=None):
   if pm is None:
@@ -27,6 +27,11 @@ def dmonitoringd_thread(sm=None, pm=None):
 
   # 10Hz <- dmonitoringmodeld
   while True:
+
+    # disable driver monitoring
+    time.sleep(1)
+    continue;
+
     sm.update()
 
     if not sm.updated['driverState']:
