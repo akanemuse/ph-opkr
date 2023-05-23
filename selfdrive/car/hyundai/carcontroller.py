@@ -524,6 +524,7 @@ class CarController():
     max_speed_in_mph = self.CP.vCruisekph * 0.621371
     if max_speed_in_mph < 22: # have max speed just slightly over cruise so it doesn't just disable it immediately if no good reason to
       max_speed_in_mph = 22
+    driver_doing_speed = CS.out.brakePressed or CS.out.gasPressed
 
     # get biggest upcoming curve value
     vcurv = 0
@@ -587,8 +588,9 @@ class CarController():
       desired_speed = 0
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
-    if CS.cruise_buttons != 0:
-      self.temp_disable_spamming = 7
+    # also take a break if we hit the gas/brake
+    if CS.cruise_buttons != 0 or driver_doing_speed:
+      self.temp_disable_spamming = 5
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
@@ -596,10 +598,11 @@ class CarController():
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
-    if cruise_difference_max > 3:
-      cruise_difference_max = 3 # do a max of presses at a time
+    if cruise_difference_max > 4:
+      cruise_difference_max = 4 # do a max of presses at a time
 
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not taking a break
+    # also dont press buttons if the driver is hitting the gas or brake
     if cruise_difference >= 0.666 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
