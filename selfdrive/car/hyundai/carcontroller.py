@@ -518,15 +518,6 @@ class CarController():
     # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
     # self.sm['radarState'].leadOne #lead data
 
-    # TODO: still get random blips and even had a "CAN ERROR: Check connections" appear, causing a disengagement
-    # - Discord user suggests capturing the error with 'tmux a' ssh command live
-    # - Discord user thinks it is a "CAN TIMEOUT" happening
-    # - can I just restart Open Pilot automatically if this error happens?
-    #   - how about just showing a warning instead of disabling? hard to know side effects...
-    # - video showed constant desired_speed before "can error", so cruise buttons were probably not being sent
-    #   - but errors like CAN ERROR are usually not immediate... compare timing with older videos that had CAN ERRORS with button presses
-    #   - might still be caused by pressing buttons too fast and CAN ERROR was delayed (e.g. when TIMEOUT was reached)
-
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
@@ -536,15 +527,12 @@ class CarController():
 
     # get biggest upcoming curve value
     vcurv = 0
-    vcurv_avg = 0
     if len(path_plan.curvatures) > 0:
       for curval in path_plan.curvatures:
         acurval = abs(curval)
-        vcurv_avg += acurval * 100
         if acurval > vcurv:
           vcurv = acurval
       vcurv *= 100 #scale up
-      vcurv_avg /= len(path_plan.curvatures)
 
     # lead car info
     l0prob = self.sm['radarState'].leadOne.modelProb
@@ -598,18 +586,18 @@ class CarController():
     if desired_speed < 0:
       desired_speed = 0
 
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp))
-
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
-      self.temp_disable_spamming = 5
+      self.temp_disable_spamming = 7
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
+
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
-    if cruise_difference_max > 4:
-      cruise_difference_max = 4 # do a max of presses at a time
+    if cruise_difference_max > 3:
+      cruise_difference_max = 3 # do a max of presses at a time
 
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not taking a break
     if cruise_difference >= 0.666 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
