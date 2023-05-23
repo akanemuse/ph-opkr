@@ -610,11 +610,11 @@ class CarController():
       elif CS.current_cruise_speed > desired_speed:
         for x in range(cruise_difference_max):
           can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
-        self.temp_disable_spamming = 2 # take a break
+        self.temp_disable_spamming = 3 # take a break
       elif CS.current_cruise_speed < desired_speed:
         for x in range(cruise_difference_max):
           can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
-        self.temp_disable_spamming = 2 # take a break
+        self.temp_disable_spamming = 3 # take a break
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
