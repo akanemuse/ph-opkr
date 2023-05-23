@@ -607,7 +607,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
-    cruise_difference_max = math.ceil(cruise_difference)
+    cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
     if cruise_difference_max > 4:
       cruise_difference_max = 4 # do a max of presses at a time
 
