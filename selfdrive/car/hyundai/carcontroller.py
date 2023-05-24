@@ -522,8 +522,6 @@ class CarController():
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
     max_speed_in_mph = self.CP.vCruisekph * 0.621371
-    if max_speed_in_mph < 22: # have max speed just slightly over cruise so it doesn't just disable it immediately if no good reason to
-      max_speed_in_mph = 22
     driver_doing_speed = CS.out.brakeLights or CS.out.gasPressed
 
     # get biggest upcoming curve value
@@ -540,10 +538,8 @@ class CarController():
     l0d = self.sm['radarState'].leadOne.dRel
     l0v = self.sm['radarState'].leadOne.vRel
 
-    # start with a speed target, capped at max speed
-    desired_speed = v_future
-    if desired_speed > max_speed_in_mph:
-      desired_speed = max_speed_in_mph
+    # start with our picked max speed
+    desired_speed = max_speed_in_mph
 
     # make an adjustment based on e2eX (<100 usually means something amiss)
     e2eX_speed = 0
@@ -579,7 +575,7 @@ class CarController():
     speed_diff = desired_speed - clu11_speed
 
     # apply a spam overpress to hurry up cruise control
-    desired_speed += speed_diff * 0.5
+    desired_speed += speed_diff * 0.6
 
     # sanity checks
     if desired_speed > max_speed_in_mph:
