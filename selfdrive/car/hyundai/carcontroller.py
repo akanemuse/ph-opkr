@@ -508,16 +508,6 @@ class CarController():
     if self.mode_change_timer > 0:
       self.mode_change_timer -= 1
 
-    # self.CP.vCruisekph <--- max speed from screen
-    # CS.current_cruise_speed <--- WORKS
-    # clu11_speed <--- current car speed WORKS
-    # self.sm['longitudinalPlan'].speeds <--- array of desired speeds (seems to be all zeros)
-    # can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)) <--- how to send a button press
-    # can_sends.extend([create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL)] * send_count) <--- send lots of presses at once
-    # self.sm['longitudinalPlan'].e2eX[12] <--- something
-    # self.sm['longitudinalPlan'].cruiseTarget[12] <--- something
-    # self.sm['radarState'].leadOne #lead data
-
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
