@@ -524,7 +524,7 @@ class CarController():
         scaled_curves.append(curval * 100)
 
       sc0 = scaled_curves[0]
-      scm = scaled_curves[(len(scaled_curves) - 1)/2]
+      scm = scaled_curves[math.floor((len(scaled_curves) - 1)/2)]
       scl = scaled_curves[-1]
 
     # lead car info
