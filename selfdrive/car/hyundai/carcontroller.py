@@ -515,13 +515,17 @@ class CarController():
     driver_doing_speed = CS.out.brakeLights or CS.out.gasPressed
 
     # get biggest upcoming curve value
-    vcurv = 0
+    scaled_curves = []
+    sc0 = 0
+    scm = 0
+    scl = 0
     if len(path_plan.curvatures) > 0:
       for curval in path_plan.curvatures:
-        acurval = abs(curval)
-        if acurval > vcurv:
-          vcurv = acurval
-      vcurv *= 100 #scale up
+        scaled_curves.append(curval * 100)
+
+      sc0 = scaled_curves[0]
+      scm = scaled_curves[(len(scaled_curves) - 1)/2]
+      scl = scaled_curves[-1]
 
     # lead car info
     l0prob = self.sm['radarState'].leadOne.modelProb
@@ -541,8 +545,8 @@ class CarController():
       desired_speed *= e2adj
 
     # if we are apporaching a turn, slow down in preparation
-    vcurv_adj = 3.5 / (vcurv + 3.5)
-    desired_speed *= vcurv_adj
+    #vcurv_adj = 3.5 / (vcurv + 3.5)
+    #desired_speed *= vcurv_adj
 
     # is there a lead?
     # try to match 3 seconds behind it
@@ -580,7 +584,7 @@ class CarController():
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", L0v>" + "{:.2f}".format(l0v) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", l0D>" + "{:.2f}".format(l0d) + ", l0p>" + "{:.2f}".format(l0prob) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
+    trace1.printf1("sc0>" + "{:.2f}".format(sc0) + "scM>" + "{:.2f}".format(scm) + "scL>" + "{:.2f}".format(scl) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
