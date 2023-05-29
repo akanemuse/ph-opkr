@@ -514,18 +514,15 @@ class CarController():
     max_speed_in_mph = self.CP.vCruisekph * 0.621371
     driver_doing_speed = CS.out.brakeLights or CS.out.gasPressed
 
-    # get biggest upcoming curve value
-    scaled_curves = []
-    sc0 = 0
-    scm = 0
-    scl = 0
-    if len(path_plan.curvatures) > 0:
-      for curval in path_plan.curvatures:
-        scaled_curves.append(curval * 100)
-
-      sc0 = scaled_curves[0]
-      scm = scaled_curves[math.floor((len(scaled_curves) - 1)/2)]
-      scl = scaled_curves[-1]
+    # get biggest upcoming curve value, ignoring the curve we are currently on (so we plan ahead better)
+    vcurv = 0
+    curv_len = len(path_plan.curvatures)
+    if curv_len > 0:
+      curv_middle = math.floor((curv_len - 1)/2)
+      for x in range(curv_middle, curv_len):
+        acurval = abs(path_plan.curvatures[x] * 100)
+        if acurval > vcurv:
+          vcurv = acurval
 
     # lead car info
     l0prob = self.sm['radarState'].leadOne.modelProb
@@ -545,8 +542,8 @@ class CarController():
       desired_speed *= e2adj
 
     # if we are apporaching a turn, slow down in preparation
-    #vcurv_adj = 3.5 / (vcurv + 3.5)
-    #desired_speed *= vcurv_adj
+    vcurv_adj = 3.5 / (vcurv + 3.5)
+    desired_speed *= vcurv_adj
 
     # is there a lead?
     # try to match 3 seconds behind it
@@ -584,7 +581,7 @@ class CarController():
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
-    trace1.printf1("sc0>" + "{:.2f}".format(sc0) + "scM>" + "{:.2f}".format(scm) + "scL>" + "{:.2f}".format(scl) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
