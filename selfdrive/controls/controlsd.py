@@ -557,7 +557,7 @@ class Controls:
       current_v_cruise_mph = self.v_cruise_kph * 0.621371
       current_mph = CS.vEgo * 2.23694 # convert m/s -> mph
       if current_mph > 26:
-        interval = math.floor((current_mph - 26) / 4)
+        interval = round((current_mph - 26) / 4)
         set_to_mph = 26 + interval * 4
       if set_to_mph > 70:
         set_to_mph = 70 # cap autospeed setting max
