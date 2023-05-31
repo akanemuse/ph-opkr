@@ -553,7 +553,8 @@ class CarController():
       lead_time = l0d / speed_in_ms
       lead_time_ideal_offset = lead_time - 3.0
       if lead_time_ideal_offset < 0: # slow down a bit faster if <3 seconds from lead
-        lead_time_ideal_offset *= 4
+        lead_time_abs = -lead_time_ideal_offset
+        lead_time_ideal_offset = -(((lead_time_abs+2)**2)-4)
       max_lead_adj = lead_speed + lead_time_ideal_offset
       if desired_speed > max_lead_adj: # apply slow
         desired_speed = max_lead_adj
