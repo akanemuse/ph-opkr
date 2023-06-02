@@ -576,11 +576,16 @@ class CarController():
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     # also take a break if we hit the gas/brake
-    if CS.cruise_buttons != 0 or driver_doing_speed:
-      self.temp_disable_spamming = 5
+    if CS.cruise_buttons != 0: # little longer when pressing buttons to prevent dash blips
+      self.temp_disable_spamming = 6
+    elif driver_doing_speed: # little bit quicker spamming after gas/brake
+      self.temp_disable_spamming = 3
+
+    # count down self spamming timer
     if self.temp_disable_spamming > 0:
       self.temp_disable_spamming -= 1
 
+    # print debug data
     trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
