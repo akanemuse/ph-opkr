@@ -546,17 +546,39 @@ class CarController():
     desired_speed *= vcurv_adj
 
     # is there a lead?
-    # try to match 3 seconds behind it
     if l0prob > 0.5 and clu11_speed > 5:
-      lead_speed = clu11_speed + l0v * 2.23694
+      # get lead speed difference in mph
+      lead_vdiff_mph = l0v * 2.23694
+      # small negative numbers (<4) are usually noisy without actual radar, so give them less significance
+      # we will rely more on distance in this case
+      # however, bigger negative numbers should have more importance so we react quicker
+      # positive numbers we will take as-is
+      if lead_vdiff_mph < 0:
+          lead_vdiff_mph *= 2 * ( (-1/(abs(lead_vdiff_mph)*0.25 + 1)) + 1)
+      # calculate an estimate of the lead car's speed for purposes of setting our speed
+      lead_speed = clu11_speed + lead_vdiff_mph
+      # calculate lead car time
       speed_in_ms = clu11_speed * 0.44704
       lead_time = l0d / speed_in_ms
-      lead_time_ideal_offset = lead_time - 3.0
-      if lead_time_ideal_offset < 0: # slow down a bit faster if <3 seconds from lead
-        lead_time_ideal_offset *= 5.5
+      # caculate a target lead car time, which is generally 3 seconds unless we are driving fast
+      # then we need to be a little closer to keep car within good visible range
+      # and prevent big gaps where cars always are cutting in
+      target_time = 3-((clu11_speed/85)**3)
+      # do not go under a certain lead car time for safety
+      if target_time < 2.2:
+          target_time = 2.2
+      # calculate the difference of our current lead time and desired lead time
+      lead_time_ideal_offset = lead_time - target_time
+      # depending on slowing down or speeding up, give it a boost
+      if lead_time_ideal_offset < 0:
+          lead_time_ideal_offset *= 4
+      else:
+          lead_time_ideal_offset *= 2.5
+      # calculate the final max speed we should be going based on lead car
       max_lead_adj = lead_speed + lead_time_ideal_offset
-      if desired_speed > max_lead_adj: # apply slow
-        desired_speed = max_lead_adj
+      # cap our desired_speed to this final max speed
+      if desired_speed > max_lead_adj:
+          desired_speed = max_lead_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.7 and clu11_speed < 45:
