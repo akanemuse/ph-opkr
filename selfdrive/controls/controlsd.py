@@ -558,8 +558,6 @@ class Controls:
       if current_mph > 26:
         interval = round((current_mph - 26) / 4)
         set_to_mph = 26 + interval * 4
-      if set_to_mph > 70:
-        set_to_mph = 70 # cap autospeed setting max
       self.v_cruise_kph = set_to_mph * 1.60934 # convert back to mph
     else:
       # not pressing gas/brake, and cruise is set, use button presses to control speed
