@@ -601,7 +601,7 @@ class CarController():
     if CS.cruise_buttons != 0: # little longer when pressing buttons to prevent dash blips
       self.temp_disable_spamming = 6
     elif driver_doing_speed: # little bit quicker spamming after gas/brake
-      self.temp_disable_spamming = 3
+      self.temp_disable_spamming = 4
 
     # count down self spamming timer
     if self.temp_disable_spamming > 0:
