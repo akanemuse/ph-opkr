@@ -554,7 +554,7 @@ class CarController():
       # however, bigger negative numbers should have more importance so we react quicker
       # positive numbers we will take as-is
       if lead_vdiff_mph < 0:
-          lead_vdiff_mph *= 2 * ( (-1/(abs(lead_vdiff_mph)*0.25 + 1)) + 1)
+        lead_vdiff_mph *= 2 * ( (-1/(abs(lead_vdiff_mph)*0.25 + 1)) + 1)
       # calculate an estimate of the lead car's speed for purposes of setting our speed
       lead_speed = clu11_speed + lead_vdiff_mph
       # calculate lead car time
@@ -563,22 +563,22 @@ class CarController():
       # caculate a target lead car time, which is generally 3 seconds unless we are driving fast
       # then we need to be a little closer to keep car within good visible range
       # and prevent big gaps where cars always are cutting in
-      target_time = 3-((clu11_speed/85)**3)
+      target_time = 3-((clu11_speed/90)**3)
       # do not go under a certain lead car time for safety
-      if target_time < 2.2:
-          target_time = 2.2
+      if target_time < 2.3:
+        target_time = 2.3
       # calculate the difference of our current lead time and desired lead time
       lead_time_ideal_offset = lead_time - target_time
-      # depending on slowing down or speeding up, give it a boost
+      # depending on slowing down or speeding up, scale
       if lead_time_ideal_offset < 0:
-          lead_time_ideal_offset *= 4
+        lead_time_ideal_offset = -(-lead_time_ideal_offset * 3.5) ** 1.4 # exponentially slow down if getting closer and closer
       else:
-          lead_time_ideal_offset *= 2.5
+        lead_time_ideal_offset *= 2.5 # boost to catch up to car infront if far away
       # calculate the final max speed we should be going based on lead car
       max_lead_adj = lead_speed + lead_time_ideal_offset
       # cap our desired_speed to this final max speed
       if desired_speed > max_lead_adj:
-          desired_speed = max_lead_adj
+        desired_speed = max_lead_adj
 
     # about to hit a stop sign and we are going slow enough to handle it
     if stoplinesp > 0.7 and clu11_speed < 45:
