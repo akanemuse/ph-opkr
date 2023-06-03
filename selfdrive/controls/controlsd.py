@@ -556,8 +556,12 @@ class Controls:
       set_to_mph = 26 # default base speed
       current_mph = CS.vEgo * 2.23694 # convert m/s -> mph
       if current_mph > 26:
-        interval = round((current_mph - 26) / 4)
-        set_to_mph = 26 + interval * 4
+        interval = 4
+        # if we are going above 70 mph, we go by 2 mph intervals
+        if current_mph > 70.5:
+          interval = 2
+        interval_count = round((current_mph - 26) / interval)
+        set_to_mph = 26 + interval_count * interval
       self.v_cruise_kph = set_to_mph * 1.60934 # convert back to mph
     else:
       # not pressing gas/brake, and cruise is set, use button presses to control speed
