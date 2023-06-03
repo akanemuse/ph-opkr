@@ -590,6 +590,10 @@ class CarController():
     # apply a spam overpress to hurry up cruise control
     desired_speed += speed_diff * 0.6
 
+    # if we are going much faster than we want, disable cruise to trigger more intense regen braking
+    if clu11_speed > desired_speed * 1.7:
+      desired_speed = 0
+
     # sanity checks
     if desired_speed > max_speed_in_mph:
       desired_speed = max_speed_in_mph
