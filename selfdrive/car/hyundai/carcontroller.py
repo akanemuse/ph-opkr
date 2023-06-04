@@ -17,6 +17,7 @@ from selfdrive.controls.lib.desire_helper import LANE_CHANGE_SPEED_MIN
 from common.params import Params
 import common.log as trace1
 import common.CTime1000 as tm
+import datetime
 from random import randint
 from decimal import Decimal
 
@@ -237,6 +238,9 @@ class CarController():
     self.vrel_delta_timer = 0
     self.vrel_delta_timer2 = 0
     self.vrel_delta_timer3 = 0
+
+    self.lead_distance_hist = []
+    self.lead_distance_times = []
 
     self.e2e_standstill_enable = self.params.get_bool("DepartChimeAtResume")
     self.e2e_standstill = False
@@ -529,6 +533,29 @@ class CarController():
     l0d = self.sm['radarState'].leadOne.dRel
     l0v = self.sm['radarState'].leadOne.vRel
 
+    # store distance history of lead car to merge with l0v to get a better speed relative value
+    l0v_distval_mph = -1000 # default, no good value
+    if l0prob > 0.5:
+      # if we got vastly different distances from last frame, we either had a cut in or
+      # really bad noise. reset our data
+      if len(self.lead_distance_hist) > 0 and abs(l0d - self.lead_distance_hist[-1]) > 5:
+        self.lead_distance_hist.clear()
+        self.lead_distance_times.clear()
+      else:
+        # ok, track this
+        self.lead_distance_hist.append(l0d)
+        self.lead_distance_times.append(datetime.datetime.now())
+        time_diff = (self.lead_distance_times[-1] - self.lead_distance_times[0]).total_seconds()
+        # if we've got enough data, calculate a speed based on our distance data
+        if time_diff > 0.5:
+          old_distance = self.lead_distance_hist.pop(0)
+          self.lead_distance_times.pop(0)
+          l0v_distval_mph = ((l0d - old_distance) / time_diff) * 2.23694
+    else:
+      # no lead, clear data
+      self.lead_distance_hist.clear()
+      self.lead_distance_times.clear()
+
     # start with our picked max speed
     desired_speed = max_speed_in_mph
 
@@ -612,7 +639,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # print debug data
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
