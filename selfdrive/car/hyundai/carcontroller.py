@@ -536,7 +536,7 @@ class CarController():
     l0v = self.sm['radarState'].leadOne.vRel
 
     # store distance history of lead car to merge with l0v to get a better speed relative value
-    time_interval_for_distspeed = 0.666
+    time_interval_for_distspeed = 0.75
     l0v_distval_mph = -1000 # default, no good value
     if l0prob > 0.5:
       # if we got vastly different distances from last frame, we either had a cut in or
@@ -549,7 +549,7 @@ class CarController():
         # ok, start averaging this distance value
         self.lead_distance_histavg.append(l0d)
         # if we've got enough data to average, do so into our main list
-        if len(self.lead_distance_histavg) > 4:
+        if len(self.lead_distance_histavg) > 9:
           self.lead_distance_hist.append(statistics.fmean(self.lead_distance_histavg))
           self.lead_distance_times.append(datetime.datetime.now())
           self.lead_distance_histavg.clear()
