@@ -535,28 +535,4 @@ class NaviControl():
     return round(min(var_speed, v_curv_speed, o_curv_speed))
 
   def update(self, CS, path_plan):
-    self.na_timer += 1
-    if self.na_timer > 100:
-      self.na_timer = 0
-      self.speedlimit_decel_off = Params().get_bool("SpeedLimitDecelOff")
-    btn_signal = None
-    if not self.button_status(CS):  # 사용자가 버튼클릭하면 일정시간 기다린다.
-      pass
-    elif CS.cruise_active:
-      cruiseState_speed = round(self.sm['controlsState'].vCruise)
-      kph_set_vEgo = self.get_navi_speed(self.sm, CS, cruiseState_speed) # camspeed
-      if self.osm_speedlimit_enabled and self.map_spdlimit_offset_option == 2:
-        navi_speed = kph_set_vEgo
-      else:
-        navi_speed = min(cruiseState_speed, kph_set_vEgo)
-      self.safetycam_speed = navi_speed
-      if CS.cruise_set_mode != 5:
-        self.ctrl_speed = self.auto_speed_control(CS, navi_speed, path_plan) # lead, curve speed
-      else:
-        self.ctrl_speed = navi_speed # navi speed
-
-      # print('self.ctrl_speed={}  cruiseState_speed={}'.format(self.ctrl_speed, cruiseState_speed))      
-
-      btn_signal = self.ascc_button_control(CS, self.ctrl_speed)
-
-    return btn_signal
+    return None
