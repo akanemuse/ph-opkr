@@ -12,7 +12,7 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState
 from selfdrive.car.hyundai.carstate import GearShifter
 from selfdrive.controls.lib.desire_helper import LANE_CHANGE_SPEED_MIN
 
-from selfdrive.car.hyundai.navicontrol  import NaviControl
+#from selfdrive.car.hyundai.navicontrol  import NaviControl
 
 from common.params import Params
 import common.log as trace1
@@ -121,7 +121,7 @@ class CarController():
 
     self.timer1 = tm.CTime1000("time")
 
-    self.NC = NaviControl()
+    #self.NC = NaviControl()
 
     self.dRel = 0
     self.vRel = 0
@@ -285,7 +285,7 @@ class CarController():
 
     self.vFuture = v_future
     self.vFutureA = v_future_a
-    path_plan = self.NC.update_lateralPlan()
+    path_plan = self.sm['lateralPlan'] #self.NC.update_lateralPlan()
     if frame % 10 == 0:
       self.model_speed = path_plan.modelSpeed
 
@@ -714,7 +714,7 @@ class CarController():
     new_actuators = actuators.copy()
     new_actuators.steer = apply_steer / self.p.STEER_MAX
     new_actuators.accel = self.accel
-    safetycam_speed = self.NC.safetycam_speed
+    safetycam_speed = 0 #self.NC.safetycam_speed
 
     self.lkas11_cnt += 1
 
