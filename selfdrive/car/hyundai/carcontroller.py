@@ -291,7 +291,8 @@ class CarController():
 
     self.vFuture = v_future
     self.vFutureA = v_future_a
-    path_plan = self.sm['lateralPlan'] #self.NC.update_lateralPlan()
+    self.sm.update(0)
+    path_plan = self.sm['lateralPlan']
     if frame % 10 == 0:
       self.model_speed = path_plan.modelSpeed
 
