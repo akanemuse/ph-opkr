@@ -563,6 +563,11 @@ class CarController():
           # if we've got enough data, calculate a speed based on our distance data
           if time_diff > time_interval_for_distspeed:
             l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
+            # cap this relative to our current speed, as very wild numbers are more likely to temporary messy data
+            if l0v_distval_mph > clu11_speed * 0.5:
+              l0v_distval_mph = clu11_speed * 0.5
+            elif l0v_distval_mph < clu11_speed * -0.5:
+              l0v_distval_mph = clu11_speed * -0.5
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
