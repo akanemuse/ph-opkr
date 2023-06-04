@@ -570,10 +570,10 @@ class CarController():
       self.lead_distance_histavg.clear()
     
     # if we got a distspeed value, mix it with l0v (which we give more weight)
-    l0v_mixed = -1000
+    # otherwise, just use the model l0v
+    lead_vdiff_mph = l0v * 2.23694
     if l0v_distval_mph > -900:
-      l0v_mph = l0v * 2.23694
-      l0v_mixed = (l0v_distval_mph + l0v_mph + l0v_mph) * 0.333333
+      lead_vdiff_mph = (l0v_distval_mph + lead_vdiff_mph + lead_vdiff_mph) * 0.333333
 
     # start with our picked max speed
     desired_speed = max_speed_in_mph
@@ -593,14 +593,6 @@ class CarController():
 
     # is there a lead?
     if l0prob > 0.5 and clu11_speed > 5:
-      # get lead speed difference in mph
-      lead_vdiff_mph = l0v * 2.23694
-      # small negative numbers (<4) are usually noisy without actual radar, so give them less significance
-      # we will rely more on distance in this case
-      # however, bigger negative numbers should have more importance so we react quicker
-      # positive numbers we will take as-is
-      if lead_vdiff_mph < 0:
-        lead_vdiff_mph *= 2 * ( (-1/(abs(lead_vdiff_mph)*0.25 + 1)) + 1)
       # calculate an estimate of the lead car's speed for purposes of setting our speed
       lead_speed = clu11_speed + lead_vdiff_mph
       # calculate lead car time
@@ -658,7 +650,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # print debug data
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(l0v_mixed))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(lead_vdiff_mph))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
