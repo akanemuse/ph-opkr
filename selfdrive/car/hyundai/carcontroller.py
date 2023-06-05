@@ -571,7 +571,7 @@ class CarController():
           l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
           overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
           # reduce confidence of large values
-          overall_confidence *= 1 - (l0v_distval_mph / 30.0)
+          overall_confidence *= 1 - (abs(l0v_distval_mph) / 30.0)
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
