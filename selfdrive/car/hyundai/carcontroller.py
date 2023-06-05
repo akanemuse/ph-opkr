@@ -603,7 +603,7 @@ class CarController():
     # is there a lead?
     if l0prob > 0.5 and clu11_speed > 5:
       # amplify large lead car speed differences a bit so we react faster
-      lead_vdiff_mph *= ((abs(lead_vdiff_mph) * 0.03) ** 1.2) + 1
+      lead_vdiff_mph *= ((abs(lead_vdiff_mph) * 0.0325) ** 1.2) + 1
       # calculate an estimate of the lead car's speed for purposes of setting our speed
       lead_speed = clu11_speed + lead_vdiff_mph
       # calculate lead car time
