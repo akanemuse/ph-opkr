@@ -603,7 +603,7 @@ class CarController():
     # is there a lead?
     if l0prob > 0.5 and clu11_speed > 5:
       # amplify large lead car speed differences a bit so we react faster
-      lead_vdiff_mph *= ((lead_vdiff_mph * 0.065) ** 2) + 1
+      lead_vdiff_mph *= ((abs(lead_vdiff_mph) * 0.035) ** 1.2) + 1
       # calculate an estimate of the lead car's speed for purposes of setting our speed
       lead_speed = clu11_speed + lead_vdiff_mph
       # calculate lead car time
@@ -622,7 +622,7 @@ class CarController():
       if lead_time_ideal_offset < 0:
         lead_time_ideal_offset = -(-lead_time_ideal_offset * 3.5) ** 1.4 # exponentially slow down if getting closer and closer
       else:
-        lead_time_ideal_offset *= 2.5 # boost to catch up to car infront if far away
+        lead_time_ideal_offset *= 3 # boost to catch up to car infront if far away
       # calculate the final max speed we should be going based on lead car
       max_lead_adj = lead_speed + lead_time_ideal_offset
       # cap our desired_speed to this final max speed
