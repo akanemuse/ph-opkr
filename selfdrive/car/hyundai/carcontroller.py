@@ -572,7 +572,7 @@ class CarController():
           l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
           overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
           # reduce confidence of large values different from model's values
-          overall_confidence *= 1 - (abs(l0v_distval_mph - lead_vdiff_mph) / 25.0)
+          overall_confidence *= 1 - (abs(l0v_distval_mph - lead_vdiff_mph) / 15)
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
@@ -603,7 +603,7 @@ class CarController():
     # is there a lead?
     if l0prob > 0.5 and clu11_speed > 5:
       # amplify large lead car speed differences a bit so we react faster
-      lead_vdiff_mph *= ((abs(lead_vdiff_mph) * 0.035) ** 1.2) + 1
+      lead_vdiff_mph *= ((abs(lead_vdiff_mph) * 0.03) ** 1.2) + 1
       # calculate an estimate of the lead car's speed for purposes of setting our speed
       lead_speed = clu11_speed + lead_vdiff_mph
       # calculate lead car time
