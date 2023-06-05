@@ -53,6 +53,8 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
 
   return sys_warning, sys_state, left_lane_warning, right_lane_warning
 
+def lerp(a, b, t):
+  return b * t + a * (1.0 - t)
 
 class CarController():
   def __init__(self, dbc_name, CP, VM):
@@ -243,6 +245,7 @@ class CarController():
     self.lead_distance_hist = []
     self.lead_distance_times = []
     self.lead_distance_histavg = []
+    self.lead_distance_accuracy = []
 
     self.e2e_standstill_enable = self.params.get_bool("DepartChimeAtResume")
     self.e2e_standstill = False
@@ -262,7 +265,6 @@ class CarController():
       self.str_log2 = 'T={:0.2f}/{:0.2f}/{:0.2f}/{:0.3f}'.format(CP.lateralTuning.torque.kp, CP.lateralTuning.torque.kf, CP.lateralTuning.torque.ki, CP.lateralTuning.torque.friction)
 
     self.sm = messaging.SubMaster(['controlsState', 'radarState', 'longitudinalPlan'])
-
 
   def smooth_steer( self, apply_torque, CS ):
     if self.CP.smoothSteer.maxSteeringAngle and abs(CS.out.steeringAngleDeg) > self.CP.smoothSteer.maxSteeringAngle:
@@ -537,48 +539,46 @@ class CarController():
 
     # store distance history of lead car to merge with l0v to get a better speed relative value
     time_interval_for_distspeed = 0.5
-    l0v_distval_mph = -1000 # default, no good value
+    overall_confidence = 0
+    l0v_distval_mph = 0
     if l0prob > 0.5:
-      # if we got vastly different distances from last frame, we either had a cut in or
-      # really bad noise. reset our data
-      if len(self.lead_distance_histavg) > 0 and abs(l0d - self.lead_distance_histavg[-1]) > 7.5:
-        self.lead_distance_hist.clear()
+      # ok, start averaging this distance value
+      self.lead_distance_histavg.append(l0d)
+      # if we've got enough data to average, do so into our main list
+      if len(self.lead_distance_histavg) > 15:
+        # get some statistics on the data we've collected
+        finalavg = statistics.fmean(self.lead_distance_histavg)
+        finalacc = 1.0 - (statistics.pstdev(self.lead_distance_histavg) / finalavg)
+        if finalacc < 0.0:
+          finalacc = 0.0
+        self.lead_distance_hist.append(finalavg)
+        self.lead_distance_accuracy.append(finalacc)
+        # timestamp
+        self.lead_distance_times.append(datetime.datetime.now())
         self.lead_distance_histavg.clear()
-        self.lead_distance_times.clear()
-      else:
-        # ok, start averaging this distance value
-        self.lead_distance_histavg.append(l0d)
-        # if we've got enough data to average, do so into our main list
-        if len(self.lead_distance_histavg) > 19:
-          self.lead_distance_hist.append(statistics.fmean(self.lead_distance_histavg))
-          self.lead_distance_times.append(datetime.datetime.now())
-          self.lead_distance_histavg.clear()
-          # should we remove an old entry now that we just added a new one?
-          if len(self.lead_distance_times) > 2 and (self.lead_distance_times[-1] - self.lead_distance_times[1]).total_seconds() > time_interval_for_distspeed:
-            self.lead_distance_hist.pop(0)
-            self.lead_distance_times.pop(0)
-        # do we have enough averaged data to calculate a speed?
-        if len(self.lead_distance_times) > 1:
-          time_diff = (self.lead_distance_times[-1] - self.lead_distance_times[0]).total_seconds()
-          # if we've got enough data, calculate a speed based on our distance data
-          if time_diff > time_interval_for_distspeed:
-            l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
-            # cap this relative to our current speed, as very wild numbers are more likely to temporary messy data
-            if l0v_distval_mph > clu11_speed * 0.5:
-              l0v_distval_mph = clu11_speed * 0.5
-            elif l0v_distval_mph < clu11_speed * -0.5:
-              l0v_distval_mph = clu11_speed * -0.5
+        # should we remove an old entry now that we just added a new one?
+        if len(self.lead_distance_times) > 2 and (self.lead_distance_times[-1] - self.lead_distance_times[1]).total_seconds() > time_interval_for_distspeed:
+          self.lead_distance_hist.pop(0)
+          self.lead_distance_times.pop(0)
+          self.lead_distance_accuracy.pop(0)
+      # do we have enough averaged data to calculate a speed?
+      if len(self.lead_distance_times) > 1:
+        time_diff = (self.lead_distance_times[-1] - self.lead_distance_times[0]).total_seconds()
+        # if we've got enough data, calculate a speed based on our distance data
+        if time_diff > time_interval_for_distspeed:
+          l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
+          overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
       self.lead_distance_times.clear()
       self.lead_distance_histavg.clear()
     
-    # if we got a distspeed value, mix it with l0v (which we give more weight)
+    # if we got a distspeed value, mix it with l0v based on overall confidence
     # otherwise, just use the model l0v
     lead_vdiff_mph = l0v * 2.23694
-    if l0v_distval_mph > -900:
-      lead_vdiff_mph = (l0v_distval_mph + lead_vdiff_mph + lead_vdiff_mph) * 0.333333
+    if overall_confidence > 0:
+      lead_vdiff_mph = lerp(lead_vdiff_mph, l0v_distval_mph, overall_confidence * 0.5)
 
     # start with our picked max speed
     desired_speed = max_speed_in_mph
@@ -655,7 +655,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # print debug data
-    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", e2x>" + "{:.2f}".format(e2eX_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", dis>" + "{:.2f}".format(self.temp_disable_spamming) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(lead_vdiff_mph))
+    trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " DS>" + "{:.2f}".format(desired_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(lead_vdiff_mph) + ", Conf>" + "{:.2f}".format(overall_confidence))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
