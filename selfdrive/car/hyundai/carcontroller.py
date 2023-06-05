@@ -545,11 +545,11 @@ class CarController():
       # ok, start averaging this distance value
       self.lead_distance_histavg.append(l0d)
       # if we've got enough data to average, do so into our main list
-      if len(self.lead_distance_histavg) >= 18:
+      if len(self.lead_distance_histavg) >= 20:
         # get some statistics on the data we've collected
         finalavg = statistics.fmean(self.lead_distance_histavg)
         # calculate accuracy based on variance within X meters
-        finalacc = 1.0 - (statistics.pvariance(self.lead_distance_histavg) / 7.5)
+        finalacc = 1.0 - (statistics.pvariance(self.lead_distance_histavg) / 4)
         if finalacc < 0.0:
           finalacc = 0.0
         self.lead_distance_hist.append(finalavg)
@@ -570,6 +570,8 @@ class CarController():
         if time_diff > time_interval_for_distspeed:
           l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
           overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
+          # reduce confidence of large values
+          overall_confidence *= 1 - (l0v_distval_mph / 30.0)
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
