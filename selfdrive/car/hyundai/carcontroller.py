@@ -536,6 +536,7 @@ class CarController():
     l0prob = self.sm['radarState'].leadOne.modelProb
     l0d = self.sm['radarState'].leadOne.dRel
     l0v = self.sm['radarState'].leadOne.vRel
+    lead_vdiff_mph = l0v * 2.23694
 
     # store distance history of lead car to merge with l0v to get a better speed relative value
     time_interval_for_distspeed = 0.5
@@ -570,8 +571,8 @@ class CarController():
         if time_diff > time_interval_for_distspeed:
           l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
           overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
-          # reduce confidence of large values
-          overall_confidence *= 1 - (abs(l0v_distval_mph) / 30.0)
+          # reduce confidence of large values different from model's values
+          overall_confidence *= 1 - (abs(l0v_distval_mph - lead_vdiff_mph) / 25.0)
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
@@ -580,7 +581,6 @@ class CarController():
     
     # if we got a distspeed value, mix it with l0v based on overall confidence
     # otherwise, just use the model l0v
-    lead_vdiff_mph = l0v * 2.23694
     if overall_confidence > 0:
       lead_vdiff_mph = lerp(lead_vdiff_mph, l0v_distval_mph, overall_confidence * 0.5)
 
@@ -602,6 +602,8 @@ class CarController():
 
     # is there a lead?
     if l0prob > 0.5 and clu11_speed > 5:
+      # amplify large lead car speed differences a bit so we react faster
+      lead_vdiff_mph *= ((lead_vdiff_mph * 0.065) ** 2) + 1
       # calculate an estimate of the lead car's speed for purposes of setting our speed
       lead_speed = clu11_speed + lead_vdiff_mph
       # calculate lead car time
