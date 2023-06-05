@@ -545,17 +545,18 @@ class CarController():
       # ok, start averaging this distance value
       self.lead_distance_histavg.append(l0d)
       # if we've got enough data to average, do so into our main list
-      if len(self.lead_distance_histavg) > 15:
+      if len(self.lead_distance_histavg) >= 18:
         # get some statistics on the data we've collected
         finalavg = statistics.fmean(self.lead_distance_histavg)
-        finalacc = 1.0 - (statistics.pstdev(self.lead_distance_histavg) / finalavg)
+        # calculate accuracy based on variance within X meters
+        finalacc = 1.0 - (statistics.pvariance(self.lead_distance_histavg) / 7.5)
         if finalacc < 0.0:
           finalacc = 0.0
         self.lead_distance_hist.append(finalavg)
         self.lead_distance_accuracy.append(finalacc)
+        self.lead_distance_histavg.clear()
         # timestamp
         self.lead_distance_times.append(datetime.datetime.now())
-        self.lead_distance_histavg.clear()
         # should we remove an old entry now that we just added a new one?
         if len(self.lead_distance_times) > 2 and (self.lead_distance_times[-1] - self.lead_distance_times[1]).total_seconds() > time_interval_for_distspeed:
           self.lead_distance_hist.pop(0)
@@ -565,6 +566,7 @@ class CarController():
       if len(self.lead_distance_times) > 1:
         time_diff = (self.lead_distance_times[-1] - self.lead_distance_times[0]).total_seconds()
         # if we've got enough data, calculate a speed based on our distance data
+        # also get confidence based on the individual distance values compared
         if time_diff > time_interval_for_distspeed:
           l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
           overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
