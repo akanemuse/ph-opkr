@@ -40,7 +40,6 @@ class CarState(CarStateBase):
     self.driverAcc_time = 0
 
     self.current_cruise_speed = 0
-    self.is_cruise_enabled = False
     self.prev_cruise_buttons = 0
     self.prev_gap_button = 0
     
@@ -208,7 +207,6 @@ class CarState(CarStateBase):
     # cruise state
     
     self.current_cruise_speed = cp.vl["E_EMS11"]["Cruise_Limit_Target"]
-    self.is_cruise_enabled = cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0 or self.current_cruise_speed > 0
     ret.cruiseState.available = self.pilotEnabled
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
@@ -216,7 +214,7 @@ class CarState(CarStateBase):
     self.is_set_speed_in_mph = True
     ret.isMph = self.is_set_speed_in_mph
     
-    self.acc_active = self.is_cruise_enabled
+    self.acc_active = self.current_cruise_speed > 0
     ret.cruiseState.enabled = self.acc_active
     self.cruise_active = self.acc_active
     if self.cruise_active:
@@ -416,7 +414,6 @@ class CarState(CarStateBase):
 
       ("CF_Lvr_CruiseSet", "LVR12"),
       ("CRUISE_LAMP_S", "EMS16"),
-      ("CRUISE_LAMP_M", "EMS16"),
       ("Cruise_Limit_Target", "E_EMS11"),
       ("Cruise_Limit_Status", "E_EMS11"),
 

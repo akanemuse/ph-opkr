@@ -661,7 +661,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # print debug data
-    trace1.printf1("CE> " + str(CS.is_cruise_enabled) + " DS>" + "{:.2f}".format(desired_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(lead_vdiff_mph) + ", Conf>" + "{:.2f}".format(overall_confidence))
+    trace1.printf1("DS>" + "{:.2f}".format(desired_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(lead_vdiff_mph) + ", Conf>" + "{:.2f}".format(overall_confidence))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
