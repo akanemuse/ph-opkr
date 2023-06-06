@@ -596,11 +596,12 @@ class CarController():
       desired_speed = 0
 
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
-    # also take a break if we hit the gas/brake
-    if CS.cruise_buttons != 0: # little longer when pressing buttons to prevent dash blips
+    if CS.cruise_buttons != 0:
       self.temp_disable_spamming = 6
-    elif driver_doing_speed and self.temp_disable_spamming < 3: # little bit quicker spamming after gas/brake
-      self.temp_disable_spamming = 3
+    elif driver_doing_speed and abs(clu11_speed - CS.current_cruise_speed) > 4 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
+      # if our cruise is on, but our speed is very different than our cruise speed, hit SET to set it
+      can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+      self.temp_disable_spamming = 6
 
     # count down self spamming timer
     if self.temp_disable_spamming > 0:
@@ -616,7 +617,7 @@ class CarController():
 
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not taking a break
     # also dont press buttons if the driver is hitting the gas or brake
-    if cruise_difference >= 0.666 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
+    if cruise_difference >= 0.666 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0 and not driver_doing_speed:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
