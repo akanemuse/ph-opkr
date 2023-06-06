@@ -99,7 +99,7 @@ class CarController():
     self.mode_change_switch = int(self.params.get("CruiseStatemodeSelInit", encoding="utf8"))
     self.opkr_variablecruise = self.params.get_bool("OpkrVariableCruise")
     self.opkr_autoresume = self.params.get_bool("OpkrAutoResume")
-    self.time_cruise_cancelled = datetime.datetime.now()
+    self.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0)
     self.opkr_cruisegap_auto_adj = self.params.get_bool("CruiseGapAdjust")
     self.opkr_cruise_auto_res = self.params.get_bool("CruiseAutoRes")
     self.opkr_cruise_auto_res_option = int(self.params.get("AutoResOption", encoding="utf8"))
@@ -588,7 +588,7 @@ class CarController():
     desired_speed += speed_diff * 0.6
 
     # if we are going much faster than we want, disable cruise to trigger more intense regen braking
-    # if we are able to auto-resume, then trigger autoslowing faster
+    # if we are able to auto-resume, then trigger autoslowing sooner
     regen_trigger_factor = 1.7
     if self.opkr_autoresume:
       regen_trigger_factor = 1.4
@@ -638,10 +638,15 @@ class CarController():
           can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
         self.temp_disable_spamming = 3 # take a break
 
-    # long check to see if we can auto-resume cruise control
-    if self.opkr_autoresume and self.temp_disable_spamming <= 0 and CS.current_cruise_speed < 20 and clu11_speed >= 20 and clu11_speed < desired_speed_before_overpress + 1 and (datetime.datetime.now() - self.time_cruise_cancelled).total_seconds() < 6:
-      can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
-      self.temp_disable_spamming = 5 # turn back on cruise
+    # are we using the auto resume feature?
+    if self.opkr_autoresume:
+      if CS.out.brakePressed:
+        # dont re-enable cruise if we were pressing the brake
+        self.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0)
+      elif self.temp_disable_spamming <= 0 and CS.current_cruise_speed < 20 and clu11_speed >= 20 and clu11_speed < desired_speed_before_overpress + 1 and (datetime.datetime.now() - self.time_cruise_cancelled).total_seconds() < 5:
+        # long check to see if we can auto-resume cruise control
+        can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) # re-enable cruise at our current speed
+        self.temp_disable_spamming = 5 # take a break
 
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
       self.standstill_status_timer += 1
