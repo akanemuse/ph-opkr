@@ -418,43 +418,6 @@ class CarController():
     if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter != GearShifter.drive:
       enabled_speed = clu11_speed
 
-    if CS.cruise_active: # to toggle lkas, hold gap button for 1 sec
-      if CS.cruise_buttons == 3:
-        self.lkas_onoff_counter += 1
-        self.gap_by_spd_on_sw = True
-        self.gap_by_spd_on_sw_cnt2 = 0
-        if self.lkas_onoff_counter > 100:
-          self.lkas_onoff_counter = 0
-          self.lkas_temp_disabled = not self.lkas_temp_disabled
-          if self.lkas_temp_disabled:
-            self.lkas_temp_disabled_timer = 0
-          else:
-            self.lkas_temp_disabled_timer = 15
-      else:
-        if self.lkas_temp_disabled_timer:
-          self.lkas_temp_disabled_timer -= 1
-        self.lkas_onoff_counter = 0
-        if self.gap_by_spd_on_sw:
-          self.gap_by_spd_on_sw = False
-          self.gap_by_spd_on_sw_cnt += 1
-          if self.gap_by_spd_on_sw_cnt > 4: #temporary disable of auto gap if you press gap button 5 times quickly.
-            self.gap_by_spd_on_sw_trg = not self.gap_by_spd_on_sw_trg
-            self.gap_by_spd_on_sw_cnt = 0
-            self.gap_by_spd_on_sw_cnt2 = 0
-        elif self.gap_by_spd_on_sw_cnt:
-          self.gap_by_spd_on_sw_cnt2 += 1
-          if self.gap_by_spd_on_sw_cnt2 > 20:
-            self.gap_by_spd_on_sw_cnt = 0
-            self.gap_by_spd_on_sw_cnt2 = 0
-    else:
-      self.lkas_onoff_counter = 0
-      if self.lkas_temp_disabled_timer:
-        self.lkas_temp_disabled_timer -= 1
-      self.gap_by_spd_on_sw_cnt = 0
-      self.gap_by_spd_on_sw_cnt2 = 0
-      self.gap_by_spd_on_sw = False
-      self.gap_by_spd_on_sw_trg = True
-
     can_sends = []
 
     if frame == 0: # initialize counts from last received count signals
