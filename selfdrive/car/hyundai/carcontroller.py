@@ -648,35 +648,6 @@ class CarController():
         can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) # re-enable cruise at our current speed
         self.temp_disable_spamming = 5 # take a break
 
-    if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
-      self.standstill_status_timer += 1
-      if self.standstill_status_timer > 200:
-        self.standstill_status = 1
-        self.standstill_status_timer = 0
-    if self.standstill_status == 1 and CS.out.vEgo > 1:
-      self.standstill_status = 0
-      self.standstill_fault_reduce_timer = 0
-      self.last_resume_frame = frame
-      self.res_switch_timer = 0
-      self.resume_cnt = 0
-
-    if CS.out.vEgo <= 1:
-      long_control_state = self.sm['controlsState'].longControlState
-      if long_control_state == LongCtrlState.stopping and CS.out.vEgo < 0.1 and not CS.out.gasPressed:
-        self.acc_standstill_timer += 1
-        if self.acc_standstill_timer >= 200:
-          self.acc_standstill_timer = 200
-          self.acc_standstill = True
-      else:
-        self.acc_standstill_timer = 0
-        self.acc_standstill = False
-    elif CS.out.gasPressed or CS.out.vEgo > 1:
-      self.acc_standstill = False
-      self.acc_standstill_timer = 0      
-    else:
-      self.acc_standstill = False
-      self.acc_standstill_timer = 0
-
     if CS.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
