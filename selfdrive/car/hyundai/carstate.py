@@ -208,7 +208,7 @@ class CarState(CarStateBase):
     # cruise state
     
     self.current_cruise_speed = cp.vl["E_EMS11"]["Cruise_Limit_Target"]
-    self.is_cruise_enabled = cp.vl["E_EMS11"]["Cruise_Limit_Status"] != 0
+    self.is_cruise_enabled = cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0 or cp.vl["EMS16"]["CRUISE_LAMP_S"] != 0 or self.current_cruise_speed > 0
     ret.cruiseState.available = self.pilotEnabled
 
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4. if not self.no_radar else False
