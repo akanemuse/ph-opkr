@@ -463,6 +463,11 @@ class CarController():
     if self.mode_change_timer > 0:
       self.mode_change_timer -= 1
 
+    # update parameter from menu about autoresuming regularly if it changed
+    # should happen about once every 2 seconds
+    if frame % 200 == 0:
+      self.opkr_autoresume = self.params.get_bool("OpkrAutoResume")
+
     # gather all useful data for determining speed
     e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
@@ -615,7 +620,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # print debug data
-    trace1.printf1("DS>" + "{:.2f}".format(desired_speed) + ", CCr>" + "{:.2f}".format(CS.current_cruise_speed) + ", StP>" + "{:.2f}".format(stoplinesp) + ", DSpd>" + "{:.2f}".format(l0v_distval_mph) + ", DSpM>" + "{:.2f}".format(lead_vdiff_mph) + ", Conf>" + "{:.2f}".format(overall_confidence))
+    trace1.printf1("AR?>" + str(self.opkr_autoresume) + " DS>" + "{:.2f}".format(desired_speed) + " CCr>" + "{:.2f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.2f}".format(l0v_distval_mph) + " DSpM>" + "{:.2f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
