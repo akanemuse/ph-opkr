@@ -3221,12 +3221,12 @@
     <name>AutoResumeToggle</name>
     <message>
         <location filename="../qt/widgets/opkr.h" line="147"/>
-        <source>Use Auto Resume at Stop</source>
+        <source>Auto Resume Cruise</source>
         <translation>정지상태에서 자동Resume 사용</translation>
     </message>
     <message>
         <location filename="../qt/widgets/opkr.h" line="147"/>
-        <source>It uses the automatic departure function when stopping while using SCC.</source>
+        <source>If cruise disables due to slowing, can we turn it back on if we should be going faster?</source>
         <translation>SCC 사용 중 정지 시 자동 출발 기능을 사용합니다.</translation>
     </message>
 </context>

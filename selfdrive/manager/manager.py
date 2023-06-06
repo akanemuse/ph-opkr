@@ -53,7 +53,7 @@ def manager_init() -> None:
     ("OpkrEnableLogger", "0"),
     ("OpkrEnableUploader", "0"),
     ("OpkrEnableGetoffAlert", "0"),
-    ("OpkrAutoResume", "1"),
+    ("OpkrAutoResume", "0"),
     ("OpkrVariableCruise", "1"),
     ("OpkrLaneChangeSpeed", "30"),
     ("OpkrAutoLaneChangeDelay", "0"),

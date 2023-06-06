@@ -144,7 +144,7 @@ class AutoResumeToggle : public ToggleControl {
   Q_OBJECT
 
 public:
-  AutoResumeToggle() : ToggleControl(tr("Use Auto Resume at Stop"), tr("It uses the automatic departure function when stopping while using SCC."), "../assets/offroad/icon_shell.png", Params().getBool("OpkrAutoResume")) {
+  AutoResumeToggle() : ToggleControl(tr("Auto Resume Cruise"), tr("If cruise disables due to slowing, can we turn it back on if we should be going faster?"), "../assets/offroad/icon_shell.png", Params().getBool("OpkrAutoResume")) {
     QObject::connect(this, &AutoResumeToggle::toggleFlipped, [=](int state) {
       bool status = state ? true : false;
       Params().putBool("OpkrAutoResume", status);

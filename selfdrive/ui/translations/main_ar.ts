@@ -3192,12 +3192,12 @@
     <name>AutoResumeToggle</name>
     <message>
         <location filename="../qt/widgets/opkr.h" line="147"/>
-        <source>Use Auto Resume at Stop</source>
+        <source>Auto Resume Cruise</source>
         <translation>استخدم استئناف تلقائي عند التوقف</translation>
     </message>
     <message>
         <location filename="../qt/widgets/opkr.h" line="147"/>
-        <source>It uses the automatic departure function when stopping while using SCC.</source>
+        <source>If cruise disables due to slowing, can we turn it back on if we should be going faster?</source>
         <translation>يستخدم وظيفة المغادرة التلقائية عند التوقف أثناء استخدام مثبت السرعة الذكي.</translation>
     </message>
 </context>
