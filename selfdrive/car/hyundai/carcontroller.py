@@ -91,9 +91,6 @@ class CarController():
     self.acc_standstill_timer = 0
     self.acc_standstill = False
 
-    self.need_brake = False
-    self.need_brake_timer = 0
-
     self.cancel_counter = 0
 
     self.v_cruise_kph_auto_res = 0
@@ -411,20 +408,6 @@ class CarController():
       apply_steer = 0
 
     self.apply_steer_last = apply_steer
-
-    if CS.cruise_active and CS.lead_distance > 149 and self.dRel < ((CS.out.vEgo * CV.MS_TO_KPH)+5) < 100 and \
-     self.vRel*3.6 < -(CS.out.vEgo * CV.MS_TO_KPH * 0.16) and CS.out.vEgo > 7 and abs(CS.out.steeringAngleDeg) < 10 and not self.longcontrol:
-      self.need_brake_timer += 1
-      if self.need_brake_timer > 50:
-        self.need_brake = True
-    elif not CS.cruise_active and 1 < self.dRel < (CS.out.vEgo * CV.MS_TO_KPH * 0.5) < 13 and self.vRel*3.6 < -(CS.out.vEgo * CV.MS_TO_KPH * 0.6) and \
-     5 < (CS.out.vEgo * CV.MS_TO_KPH) < 20 and not (CS.out.brakeLights or CS.out.brakePressed or CS.out.gasPressed): # generate an event to avoid collision when SCC is not activated at low speed.
-      self.need_brake_timer += 1
-      if self.need_brake_timer > 20:
-        self.need_brake = True
-    else:
-      self.need_brake = False
-      self.need_brake_timer = 0
 
     sys_warning, sys_state, left_lane_warning, right_lane_warning =\
       process_hud_alert(lkas_active, self.car_fingerprint, visual_alert,
