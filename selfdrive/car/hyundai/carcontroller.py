@@ -581,25 +581,26 @@ class CarController():
       if desired_speed > max_lead_adj:
         desired_speed = max_lead_adj
 
-    # about to hit a stop sign and we are going slow enough to handle it
+    reenable_cruise_atspd = desired_speed
     if stoplinesp > 0.7 and clu11_speed < 45:
+      # about to hit a stop sign and we are going slow enough to handle it
       desired_speed = 0
+      reenable_cruise_atspd = 0 
+    else:
+      # what is our difference between desired speed and target speed?
+      speed_diff = desired_speed - clu11_speed
 
-    # what is our difference between desired speed and target speed?
-    speed_diff = desired_speed - clu11_speed
+      # apply a spam overpress to amplify speed changes
+      desired_speed += speed_diff * 0.6
 
-    # apply a spam overpress to hurry up cruise control
-    desired_speed_before_overpress = desired_speed
-    desired_speed += speed_diff * 0.6
+      # if we are going much faster than we want, disable cruise to trigger more intense regen braking
+      # if we are able to auto-resume, then trigger autoslowing sooner (as we may quickly get back off regen)
+      regen_trigger_factor = 1.7
+      if self.opkr_autoresume:
+        regen_trigger_factor = 1.5
 
-    # if we are going much faster than we want, disable cruise to trigger more intense regen braking
-    # if we are able to auto-resume, then trigger autoslowing sooner
-    regen_trigger_factor = 1.7
-    if self.opkr_autoresume:
-      regen_trigger_factor = 1.4
-
-    if clu11_speed > desired_speed * regen_trigger_factor:
-      desired_speed = 0
+      if clu11_speed > desired_speed * regen_trigger_factor:
+        desired_speed = 0
 
     # sanity checks
     if desired_speed > max_speed_in_mph:
@@ -610,7 +611,7 @@ class CarController():
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
       self.temp_disable_spamming = 6
-    elif driver_doing_speed and abs(clu11_speed - CS.current_cruise_speed) > 4 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0:
+    elif driver_doing_speed and abs(clu11_speed - CS.current_cruise_speed) > 4 and CS.current_cruise_speed >= 20 and clu11_speed >= 20 and self.temp_disable_spamming <= 0:
       # if our cruise is on, but our speed is very different than our cruise speed, hit SET to set it
       can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
       self.temp_disable_spamming = 6
@@ -620,7 +621,7 @@ class CarController():
       self.temp_disable_spamming -= 1
 
     # print debug data
-    trace1.printf1("AR?>" + str(self.opkr_autoresume) + " DS>" + "{:.2f}".format(desired_speed) + " CCr>" + "{:.2f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.2f}".format(l0v_distval_mph) + " DSpM>" + "{:.2f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
+    trace1.printf1("AR?>" + str(self.opkr_autoresume) + " Rs?>" + "{:.1f}".format(reenable_cruise_atspd) + " DS>" + "{:.1f}".format(desired_speed) + " CCr>" + "{:.1f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.1f}".format(l0v_distval_mph) + " DSpM>" + "{:.1f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
@@ -633,7 +634,7 @@ class CarController():
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 5 # we disabled cruise, don't spam more cancels
-        self.time_cruise_cancelled = datetime.datetime.now() # timestamp when we disabled it
+        self.time_cruise_cancelled = datetime.datetime.now() # timestamp when we disabled it, used for autoresuming
       elif CS.current_cruise_speed > desired_speed:
         for x in range(cruise_difference_max):
           can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
@@ -648,8 +649,8 @@ class CarController():
       if CS.out.brakePressed:
         # dont re-enable cruise if we were pressing the brake
         self.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0)
-      elif self.temp_disable_spamming <= 0 and CS.current_cruise_speed < 20 and clu11_speed >= 20 and clu11_speed < desired_speed_before_overpress + 1 and (datetime.datetime.now() - self.time_cruise_cancelled).total_seconds() < 5:
-        # long check to see if we can auto-resume cruise control
+      elif self.temp_disable_spamming <= 0 and CS.current_cruise_speed < 20 and clu11_speed >= 20 and clu11_speed < reenable_cruise_atspd + 0.5 and (datetime.datetime.now() - self.time_cruise_cancelled).total_seconds() < 5:
+        # big careful check to see if we can auto-resume cruise control
         can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) # re-enable cruise at our current speed
         self.temp_disable_spamming = 5 # take a break
 
