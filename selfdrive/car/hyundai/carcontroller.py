@@ -598,12 +598,7 @@ class CarController():
       desired_speed += speed_diff * 0.6
 
       # if we are going much faster than we want, disable cruise to trigger more intense regen braking
-      # if we are able to auto-resume, then trigger autoslowing sooner (as we may quickly get back off regen)
-      regen_trigger_factor = 1.7
-      if self.opkr_autoresume:
-        regen_trigger_factor = 1.5
-
-      if clu11_speed > desired_speed * regen_trigger_factor:
+      if clu11_speed > desired_speed * 1.7:
         desired_speed = 0
 
     # sanity checks
