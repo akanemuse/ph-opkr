@@ -595,8 +595,13 @@ class CarController():
       # apply a spam overpress to amplify speed changes
       desired_speed += speed_diff * 0.6
 
+      # if we are using autoresume features, we can use slowing more in advance (as we will get out of it)
+      slow_speed_factor = 1.7
+      if CS.opkr_autoresume:
+        slow_speed_factor = 1.5
+
       # if we are going much faster than we want, disable cruise to trigger more intense regen braking
-      if clu11_speed > desired_speed * 1.7:
+      if clu11_speed > desired_speed * slow_speed_factor:
         desired_speed = 0
 
     # sanity checks
