@@ -574,7 +574,7 @@ class CarController():
       if desired_speed > max_lead_adj:
         desired_speed = max_lead_adj
 
-    reenable_cruise_atspd = desired_speed * 1.05
+    reenable_cruise_atspd = desired_speed * 1.02 + 2.0
     if stoplinesp > 0.7 and clu11_speed < 45:
       # about to hit a stop sign and we are going slow enough to handle it
       desired_speed = 0
