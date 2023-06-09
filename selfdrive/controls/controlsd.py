@@ -546,7 +546,7 @@ class Controls:
     # automatically set desired top speed based on current speed
     # in intervals of 4, as that is what our button presses do
     # if we are considering whether to re-enable cruise and mid-auto-slowdown, don't change our set speed as we may want to resume to it
-    if CS.brakeLights or CS.gasPressed or CS.cruiseState.speed <= 0 and not CS.possibly_reenable_cruise:
+    if CS.brakeLights or CS.gasPressed or CS.cruiseState.speed <= 0 and not CS.cruiseState.nonAdaptive:
       set_to_mph = 26 # default base speed
       current_mph = CS.vEgo * 2.23694 # convert m/s -> mph
       if current_mph > 26:

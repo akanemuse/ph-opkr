@@ -312,7 +312,6 @@ struct CarState {
 
   errorsDEPRECATED @0 :List(CarEvent.EventName);
   brakeLights @19 :Bool;
-  possibly_reenable_cruise @57 :Bool;
 }
 
 # ******* radar state @ 20hz *******
