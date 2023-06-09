@@ -284,7 +284,6 @@ class CarState(CarStateBase):
 
     # OPKR
     self.sm.update(0)
-    vCruiseMax = self.sm['controlsState'].vCruise
 
     ret.safetySign = 0 #self.safety_sign
     ret.safetyDist = 0 #self.safety_dist
