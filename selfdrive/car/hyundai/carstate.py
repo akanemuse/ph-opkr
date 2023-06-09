@@ -8,6 +8,7 @@ from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES, EV_CAR,
 from selfdrive.car.interfaces import CarStateBase
 from common.numpy_fast import interp
 from common.params import Params
+import datetime
 
 GearShifter = car.CarState.GearShifter
 
@@ -37,6 +38,8 @@ class CarState(CarStateBase):
     self.pilotEnabled = False
     self.max_speed_set = 0
 
+    self.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0) 
+    self.opkr_autoresume = Params().get_bool("OpkrAutoResume") 
     self.driverAcc_time = 0
 
     self.current_cruise_speed = 0
@@ -272,6 +275,14 @@ class CarState(CarStateBase):
 
     self.parkBrake = cp.vl["TCS13"]["PBRAKE_ACT"] == 1
     self.gasPressed = ret.gasPressed
+
+    # autoresume features
+    ret.possibly_reenable_cruise = False
+    if ret.brakePressed or ret.gasPressed or self.clu_Vanz < 20:
+      # dont re-enable cruise if are manually modifying speed, or we've dropped below cruise speed
+      self.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0)
+    elif self.opkr_autoresume and not self.acc_active and (datetime.datetime.now() - self.time_cruise_cancelled).total_seconds() < 5.0:
+      ret.possibly_reenable_cruise = True 
 
     # opkr
     ret.tpms = self.get_tpms(
