@@ -467,7 +467,7 @@ class CarController():
       CS.opkr_autoresume = self.params.get_bool("OpkrAutoResume")
 
     # gather all useful data for determining speed
-    e2eX_speeds = self.sm['longitudinalPlan'].e2eX
+    # e2eX_speeds = self.sm['longitudinalPlan'].e2eX
     stoplinesp = self.sm['longitudinalPlan'].stoplineProb
     max_speed_in_mph = self.CP.vCruisekph * 0.621371
     driver_doing_speed = CS.out.brakeLights or CS.out.gasPressed
@@ -540,15 +540,6 @@ class CarController():
 
     # start with our picked max speed
     desired_speed = max_speed_in_mph
-
-    # make an adjustment based on e2eX (<100 usually means something amiss)
-    e2eX_speed = 0
-    if len(e2eX_speeds) > 0:
-      e2eX_speed = e2eX_speeds[0]
-
-    e2adj = e2eX_speed / 100
-    if e2adj < 1:
-      desired_speed *= e2adj
 
     # if we are apporaching a turn, slow down in preparation
     vcurv_adj = 3.5 / (vcurv + 3.5)
