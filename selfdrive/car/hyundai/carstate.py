@@ -278,8 +278,8 @@ class CarState(CarStateBase):
 
     # autoresume features
     ret.cruiseState.nonAdaptive = False
-    if ret.brakePressed or ret.gasPressed or self.clu_Vanz < 20:
-      # dont re-enable cruise if are manually modifying speed, or we've dropped below cruise speed
+    if ret.brakePressed or ret.gasPressed or self.clu_Vanz < 20 or bool(self.cruise_main_button):
+      # dont re-enable cruise if are manually modifying speed, pressed the cruise button, or we've dropped below cruise speed
       self.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0)
     elif self.opkr_autoresume and not self.acc_active and (datetime.datetime.now() - self.time_cruise_cancelled).total_seconds() < 7.0:
       ret.cruiseState.nonAdaptive = True 
