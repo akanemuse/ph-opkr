@@ -413,6 +413,8 @@ class CarController():
                         left_lane, right_lane, left_lane_depart, right_lane_depart)
 
     clu11_speed = CS.clu11["CF_Clu_Vanz"]
+    clu11_speed_dec = CS.clu11["CF_Clu_VanzDecimal"]
+
     enabled_speed = 38 if CS.is_set_speed_in_mph else 60
     if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter != GearShifter.drive:
       enabled_speed = clu11_speed
@@ -621,6 +623,7 @@ class CarController():
 
     # print debug data
     trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " Pr?>" + str(CS.out.cruiseState.nonAdaptive) + " Rs?>" + "{:.1f}".format(reenable_cruise_atspd) + " DS>" + "{:.1f}".format(desired_speed) + " CCr>" + "{:.1f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.1f}".format(l0v_distval_mph) + " DSpM>" + "{:.1f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
+    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed) + " cluD>" + "{:.2f}".format(clu11_speed_dec))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
