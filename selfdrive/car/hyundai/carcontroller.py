@@ -521,12 +521,18 @@ class CarController():
         if time_diff > time_interval_for_distspeed:
           l0v_distval_mph = ((self.lead_distance_hist[-1] - self.lead_distance_hist[0]) / time_diff) * 2.23694
           overall_confidence = self.lead_distance_accuracy[-1] * self.lead_distance_accuracy[0]
-          # reduce confidence of large values different from model's values
+          # values shouldn't be less than my current speed (cars are not driving into me, hopefully)
+          if l0v_distval_mph < -clu11_speed:
+            l0v_distval_mph = -clu11_speed
+          # clamp values far over model speed
+          if l0v_distval_mph > lead_vdiff_mph + 20:
+            l0v_distval_mph = lead_vdiff_mph + 20
+          # reduce confidence of large values different from model's values, but don't count them out completely
           difference_factor = 1.0 - (abs(l0v_distval_mph - lead_vdiff_mph) / 15.0)
-          if difference_factor <= 0:
-            overall_confidence = 0
-          else:
-            overall_confidence *= difference_factor
+          if difference_factor < 0.25:
+            difference_factor = 0.25
+          # ok, apply factor for final confidence
+          overall_confidence *= difference_factor
     else:
       # no lead, clear data
       self.lead_distance_hist.clear()
