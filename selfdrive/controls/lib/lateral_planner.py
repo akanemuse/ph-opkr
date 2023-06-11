@@ -38,6 +38,7 @@ class LateralPlanner:
 
     self.lat_mpc = LateralMpc()
     self.reset_mpc(np.zeros(4))
+    self.current_curve = 0
 
     self.laneless_mode = int(Params().get("LanelessMode", encoding="utf8"))
     self.laneless_mode_status = False
@@ -114,6 +115,17 @@ class LateralPlanner:
       self.LP.lll_prob *= self.DH.lane_change_ll_prob
       self.LP.rll_prob *= self.DH.lane_change_ll_prob
 
+    # calculate lane marking probabilities for purposes of switching from lane/laneless models
+    lane_visibility = (self.LP.lll_prob + self.LP.rll_prob) * 0.5
+
+    # laneless model loves to float/hug left, so we don't want to use laneless if we are
+    # going straight or turning left, as it might make us wander into the other lane more
+    # likely than laneful. So, let's give a bonus to this lane marking visibility value based on
+    # our current turn, so it will more likely use laneful model in situations we want it.
+    # self.current_curve is + when turning right, - when turning left
+    if self.current_curve < 0.2: # we are either going mostly straight or turning left
+      lane_visibility += (0.2 - self.current_curve) * 2.0 # boost lane visibility so it picks laneful more often
+
     # Calculate final driving path and set MPC costs
     if self.use_lanelines:
       d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
@@ -129,14 +141,16 @@ class LateralPlanner:
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.15])
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, heading_cost, MPC_COST_LAT.STEER_RATE)
       self.laneless_mode_status = True
-    elif self.laneless_mode == 2 and ((self.LP.lll_prob + self.LP.rll_prob)/2 < 0.275) and self.DH.lane_change_state == LaneChangeState.off:
+    elif self.laneless_mode == 2 and (lane_visibility < 0.275) and self.DH.lane_change_state == LaneChangeState.off:
+      # switch to laneless
       d_path_xyz = self.path_xyz
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.15])
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, heading_cost, MPC_COST_LAT.STEER_RATE)
       self.laneless_mode_status = True
       self.laneless_mode_status_buffer = True
-    elif self.laneless_mode == 2 and ((self.LP.lll_prob + self.LP.rll_prob)/2 > 0.325) and \
+    elif self.laneless_mode == 2 and (lane_visibility > 0.325) and \
       self.laneless_mode_status_buffer and self.DH.lane_change_state == LaneChangeState.off:
+      # switch from laneless back to laneful
       d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, MPC_COST_LAT.STEER_RATE)
       self.laneless_mode_status = False
@@ -203,6 +217,9 @@ class LateralPlanner:
     lateralPlan.lProb = float(self.LP.lll_prob)
     lateralPlan.rProb = float(self.LP.rll_prob)
     lateralPlan.dProb = float(self.LP.d_prob)
+
+    # + right turn, - left turn
+    self.current_curve = lateralPlan.curvatures[0] * 100
 
     lateralPlan.mpcSolutionValid = bool(plan_solution_valid)
     lateralPlan.solverExecutionTime = self.lat_mpc.solve_time
