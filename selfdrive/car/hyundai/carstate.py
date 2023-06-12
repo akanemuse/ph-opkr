@@ -178,7 +178,8 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.vEgoOP = ret.vEgo
 
-    ret.vEgo = cp.vl["CLU11"]["CF_Clu_Vanz"] * CV.MPH_TO_MS if bool(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"]) else cp.vl["CLU11"]["CF_Clu_Vanz"] * CV.KPH_TO_MS
+    self.clu_Vanz = cp.vl["CLU11"]["CF_Clu_Vanz"] + cp.vl["CLU11"]["CF_Clu_VanzDecimal"]
+    ret.vEgo = self.clu_Vanz * CV.MPH_TO_MS
 
     ret.standstill = ret.vEgoRaw < 0.1
     ret.standStill = self.CP.standStill
@@ -197,7 +198,6 @@ class CarState(CarStateBase):
 
     self.VSetDis = cp_scc.vl["SCC11"]["VSetDis"]
     ret.vSetDis = self.VSetDis
-    self.clu_Vanz = cp.vl["CLU11"]["CF_Clu_Vanz"] + cp.vl["CLU11"]["CF_Clu_VanzDecimal"]
     lead_objspd = cp_scc.vl["SCC11"]["ACC_ObjRelSpd"]
     self.lead_objspd = lead_objspd * CV.MS_TO_KPH
     self.Mdps_ToiUnavail = cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"]
