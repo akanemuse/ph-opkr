@@ -54,7 +54,7 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
   return sys_warning, sys_state, left_lane_warning, right_lane_warning
 
 def lerp(a, b, t):
-  return b * t + a * (1.0 - t)
+  return (b * t) + (a * (1.0 - t))
 
 class CarController():
   def __init__(self, dbc_name, CP, VM):
