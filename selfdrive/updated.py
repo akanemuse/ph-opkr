@@ -101,12 +101,16 @@ def set_consistent_flag(consistent: bool) -> None:
   os.sync()
 
 
-def set_params(new_version: bool, failed_count: int, exception: Optional[str]) -> None:
+def set_params(update_time: bool, new_version: bool, failed_count: int, exception: Optional[str]) -> None:
   params = Params()
 
   params.put("UpdateFailedCount", str(failed_count))
 
-  last_update = datetime.datetime.utcnow()
+  if update_time:
+    last_update = datetime.datetime.utcnow()
+  else:
+    last_update = datetime.datetime(2020, 10, 1, 1, 1, 1,0)
+
   if failed_count == 0:
     t = last_update.isoformat()
     params.put("LastUpdateTime", t.encode('utf8'))
@@ -404,7 +408,7 @@ def main() -> None:
   update_failed_count = 0
 
   # Set initial params for offroad alerts
-  set_params(False, 0, None)
+  set_params(False, False, 0, None)
 
   # Wait for IsOffroad to be set before our first update attempt
   wait_helper = WaitTimeHelper(proc)
@@ -460,7 +464,7 @@ def main() -> None:
       overlay_init.unlink(missing_ok=True)
 
     try:
-      set_params(new_version, update_failed_count, exception)
+      set_params(True, new_version, update_failed_count, exception)
     except Exception:
       cloudlog.exception("uncaught updated exception while setting params, shouldn't happen")
 
