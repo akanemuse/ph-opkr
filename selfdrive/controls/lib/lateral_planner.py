@@ -141,7 +141,7 @@ class LateralPlanner:
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.15])
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, heading_cost, MPC_COST_LAT.STEER_RATE)
       self.laneless_mode_status = True
-    elif self.laneless_mode == 2 and (lane_visibility < 0.275) and self.DH.lane_change_state == LaneChangeState.off:
+    elif self.laneless_mode == 2 and (lane_visibility < 0.3) and self.DH.lane_change_state == LaneChangeState.off:
       # switch to laneless
       d_path_xyz = self.path_xyz
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.15])
