@@ -197,7 +197,7 @@ class CarState(CarStateBase):
 
     self.VSetDis = cp_scc.vl["SCC11"]["VSetDis"]
     ret.vSetDis = self.VSetDis
-    self.clu_Vanz = cp.vl["CLU11"]["CF_Clu_Vanz"]
+    self.clu_Vanz = cp.vl["CLU11"]["CF_Clu_Vanz"] + cp.vl["CLU11"]["CF_Clu_VanzDecimal"]
     lead_objspd = cp_scc.vl["SCC11"]["ACC_ObjRelSpd"]
     self.lead_objspd = lead_objspd * CV.MS_TO_KPH
     self.Mdps_ToiUnavail = cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"]

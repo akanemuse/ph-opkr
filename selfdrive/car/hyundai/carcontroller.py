@@ -412,8 +412,7 @@ class CarController():
       process_hud_alert(lkas_active, self.car_fingerprint, visual_alert,
                         left_lane, right_lane, left_lane_depart, right_lane_depart)
 
-    clu11_speed = CS.clu11["CF_Clu_Vanz"]
-    clu11_speed_dec = CS.clu11["CF_Clu_VanzDecimal"]
+    clu11_speed = CS.clu11["CF_Clu_Vanz"] + CS.clu11["CF_Clu_VanzDecimal"]
 
     enabled_speed = 38 if CS.is_set_speed_in_mph else 60
     if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter != GearShifter.drive:
@@ -623,7 +622,7 @@ class CarController():
 
     # print debug data
     trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " Pr?>" + str(CS.out.cruiseState.nonAdaptive) + " Rs?>" + "{:.1f}".format(reenable_cruise_atspd) + " DS>" + "{:.1f}".format(desired_speed) + " CCr>" + "{:.1f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.1f}".format(l0v_distval_mph) + " DSpM>" + "{:.1f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
-    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed) + " cluD>" + "{:.2f}".format(clu11_speed_dec) + " cluF>" + "{:.2f}".format(clu11_speed_dec + clu11_speed))
+    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
@@ -654,13 +653,6 @@ class CarController():
 
     if CS.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
-
-    #str_log2 = 'MDPS={}  LKAS={}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}  FR={:03.0f}'.format(
-    #   CS.out.steerFaultTemporary, CS.lkas_button_on, 0 < CS.lead_distance < 149, self.aq_value if self.longcontrol else CS.scc12["aReqValue"], v_future, v_future_a, CS.cruiseGapSet, self.timer1.sampleTime()) 
-    #trace1.printf2( '{}'.format( str_log2 ) )
-
-    # str_log3 = 'V/D/R/A/M/G={:.1f}/{:.1f}/{:.1f}/{:.2f}/{:.1f}/{:1.0f}'.format(CS.clu_Vanz, CS.lead_distance, CS.lead_objspd, CS.scc12["aReqValue"], self.stoppingdist, CS.cruiseGapSet)
-    # trace1.printf3('{}'.format(str_log3))
 
     self.cc_timer += 1
     if self.cc_timer > 100:
