@@ -1187,7 +1187,7 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
         val_color = nvgRGBA(255, 0, 0, 200);
       }
       // lead car relative speed is always in meters
-      snprintf(val_str, sizeof(val_str), "%d", (int)(round(lead_one.getVRel() * (scene.is_metric ? 3.6 : 2.2369363))));
+      snprintf(val_str, sizeof(val_str), "%.1f", (float)(lead_one.getVRel() * (scene.is_metric ? 3.6 : 2.2369363)));
     } else {
        snprintf(val_str, sizeof(val_str), "-");
     }
