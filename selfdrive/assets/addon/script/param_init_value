@@ -33,11 +33,11 @@ TorqueFriction:65
 TorqueUseAngle:1
 TorqueMaxLatAccel:27
 TorqueAngDeadZone:10
-CameraOffsetAdj:60
+CameraOffsetAdj:-80
 PathOffsetAdj:0
-SteerRatioAdj:1550
-SteerRatioMaxAdj:1750
-SteerActuatorDelayAdj:36
+SteerRatioAdj:1360
+SteerRatioMaxAdj:1360
+SteerActuatorDelayAdj:30
 SteerLimitTimerAdj:100
 TireStiffnessFactorAdj:85
 SteerMaxBaseAdj:384
@@ -46,7 +46,7 @@ SteerDeltaUpBaseAdj:3
 SteerDeltaUpAdj:3
 SteerDeltaDownBaseAdj:7
 SteerDeltaDownAdj:7
-OpkrBatteryChargingControl:1
+OpkrBatteryChargingControl:0
 OpkrBatteryChargingMin:50
 OpkrBatteryChargingMax:60
 LeftCurvOffsetAdj:0
@@ -56,9 +56,9 @@ DebugUi2:0
 DebugUi3:0
 LongLogDisplay:0
 OpkrBlindSpotDetect:1
-OpkrMaxAngleLimit:90
+OpkrMaxAngleLimit:100
 OpkrSteerMethod:0
-OpkrMaxSteeringAngle:90
+OpkrMaxSteeringAngle:100
 OpkrMaxDriverAngleWait:0.002
 OpkrMaxSteerAngleWait:0.001
 OpkrDriverAngleWait:0.001
@@ -98,7 +98,7 @@ LCTimingFactor30:10
 LCTimingFactor60:40
 LCTimingFactor80:60
 LCTimingFactor110:80
-OpkrUIBrightnessOff:10
+OpkrUIBrightnessOff:25
 LCTimingFactorEnable:1
 AutoEnableSpeed:9
 SafetyCamDecelDistGain:0
@@ -140,7 +140,7 @@ UseStockDecelOnSS:0
 AnimatedRPM:1
 AnimatedRPMMax:3600
 ShowStopLine:0
-NoSmartMDPS:0
+NoSmartMDPS:1
 MultipleLateralUse:2
 MultipleLateralOpS:3,3,0
 MultipleLateralSpd:60,90
@@ -148,7 +148,7 @@ MultipleLateralOpA:3,3,0
 MultipleLateralAng:20,35
 StoppingDist:38
 SpeedCameraOffset:0
-HoldForSetting:1
+HoldForSetting:0
 RTShield:1
 OSMOfflineUse:0
 StopAtStopSign:0
