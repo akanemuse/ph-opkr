@@ -601,7 +601,7 @@ class CarController():
         slow_speed_factor = 1.5
         # also have better pre-curve slowing
         # this can trigger sooner than lead car slowing, because curve data is much less noisy
-        if curve_speed_ratio > 1.15:
+        if curve_speed_ratio > 1.175:
           desired_speed = 0
 
       # if we are going much faster than we want, disable cruise to trigger more intense regen braking
