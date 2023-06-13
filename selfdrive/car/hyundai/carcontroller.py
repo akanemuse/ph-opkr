@@ -592,7 +592,9 @@ class CarController():
     if stoplinesp > 0.7 and clu11_speed < 45:
       # about to hit a stop sign and we are going slow enough to handle it
       desired_speed = 0
-      reenable_cruise_atspd = 0 
+      # make sure we don't re-enable cruise after seeing a stop sign!
+      reenable_cruise_atspd = 0
+      CS.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1,0)
     else:
       # what is our difference between desired speed and target speed?
       speed_diff = desired_speed - clu11_speed
