@@ -550,7 +550,7 @@ class CarController():
 
     # if we are apporaching a turn, slow down in preparation
     # also note how much of a speed difference we need for this turn
-    vcurv_adj = 0.35 + (0.65 / (0.46 * vcurv + 1))
+    vcurv_adj = 0.35 + (0.65 / (0.425 * vcurv + 1))
     desired_speed *= vcurv_adj
     curve_speed_ratio = clu11_speed / desired_speed
 
@@ -601,7 +601,7 @@ class CarController():
         slow_speed_factor = 1.5
         # also have better pre-curve slowing
         # this can trigger sooner than lead car slowing, because curve data is much less noisy
-        if curve_speed_ratio > 1.2:
+        if curve_speed_ratio > 1.15:
           desired_speed = 0
 
       # if we are going much faster than we want, disable cruise to trigger more intense regen braking
