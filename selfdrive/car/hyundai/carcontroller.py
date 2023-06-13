@@ -549,7 +549,7 @@ class CarController():
     desired_speed = max_speed_in_mph
 
     # if we are apporaching a turn, slow down in preparation
-    vcurv_adj = 3.5 / (vcurv + 3.5)
+    vcurv_adj = 0.35 + (0.65 / (0.46 * vcurv + 1))
     desired_speed *= vcurv_adj
 
     # is there a lead?
