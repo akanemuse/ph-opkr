@@ -224,7 +224,7 @@ def manager_init() -> None:
     ("StoppingDist", "38"),
     ("SpeedCameraOffset", "0"),
     ("HoldForSetting", "0"),
-    ("RTShield", "0"),
+    ("RTShield", "1"),
     ("OSMOfflineUse", "0"),
     ("StopAtStopSign", "0"),
     ("VarCruiseSpeedFactor", "10"),
