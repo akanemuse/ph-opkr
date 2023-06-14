@@ -528,10 +528,13 @@ class CarController():
           # clamp values far over model speed
           if l0v_distval_mph > lead_vdiff_mph + 20:
             l0v_distval_mph = lead_vdiff_mph + 20
-          # reduce confidence of large values different from model's values, but don't count them out completely
+          # reduce confidence of large values different from model's values
+          # but don't count them out completely if we are closer
           difference_factor = 1.0 - (abs(l0v_distval_mph - lead_vdiff_mph) / 15.0)
-          if difference_factor < 0.25:
+          if difference_factor < 0.25 and l0d < 80:
             difference_factor = 0.25
+          elif difference_factor < 0:
+            difference_factor = 0
           # ok, apply factor for final confidence
           overall_confidence *= difference_factor
     else:
