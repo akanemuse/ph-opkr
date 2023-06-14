@@ -87,11 +87,6 @@ def create_cpress(packer, clu11, button):
   values["CF_Clu_CruiseSwState"] = button
   return packer.make_can_msg("CLU11", 0, values)
 
-def create_regen(packer, elect_gears, set_step):
-  values = elect_gears
-  values["Elect_Gear_Step"] = set_step
-  return packer.make_can_msg("ELECT_GEAR", 0, values)
-
 def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
   values = {
     "LFA_Icon_State": 2 if enabled else 0,
