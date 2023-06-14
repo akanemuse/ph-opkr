@@ -4,7 +4,7 @@ from common.numpy_fast import clip, interp
 from common.conversions import Conversions as CV
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfahda_mfc, create_hda_mfc, \
-                                             create_cpress, create_mdps12
+                                             create_cpress, create_mdps12, create_set_cruise, create_regen
 from selfdrive.car.hyundai.values import Buttons, CarControllerParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
 from selfdrive.controls.lib.longcontrol import LongCtrlState

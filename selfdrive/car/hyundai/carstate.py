@@ -341,6 +341,7 @@ class CarState(CarStateBase):
     self.lkas11 = copy.copy(cp_cam.vl["LKAS11"])
     self.clu11 = copy.copy(cp.vl["CLU11"])
     self.elect_gear = copy.copy(cp.vl["ELECT_GEAR"])
+    self.ems = copy.copy(cp.vl["E_EMS11"])
     if self.rd_conf:
       self.fca11 = copy.copy(cp_fca.vl["FCA11"])
     self.mdps12 = copy.copy(cp_mdps.vl["MDPS12"])
