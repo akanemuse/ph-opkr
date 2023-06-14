@@ -569,14 +569,14 @@ class CarController():
       # caculate a target lead car time, which is generally 3 seconds unless we are driving fast
       # then we need to be a little closer to keep car within good visible range
       # and prevent big gaps where cars always are cutting in
-      target_time = 3-((clu11_speed/70)**3)
+      target_time = 3-((clu11_speed/72)**3)
       # do not go under a certain lead car time for safety
-      if target_time < 2:
-        target_time = 2
+      if target_time < 2.1:
+        target_time = 2.1
       # calculate the difference of our current lead time and desired lead time
       lead_time_ideal_offset = lead_time - target_time
       # set a flag to prevent unexpected sudden slowing if we are far from this car
-      dont_sudden_slow = lead_time_ideal_offset > target_time * 0.39
+      dont_sudden_slow = lead_time_ideal_offset > target_time * 0.39 or l0d >= 80
       # depending on slowing down or speeding up, scale
       if lead_time_ideal_offset < 0:
         lead_time_ideal_offset = -(-lead_time_ideal_offset * (10.5/target_time)) ** 1.4 # exponentially slow down if getting closer and closer
