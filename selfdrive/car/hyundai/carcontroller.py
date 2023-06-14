@@ -627,10 +627,6 @@ class CarController():
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
       self.temp_disable_spamming = 6
-
-      #debug try to set level
-      can_sends.append(create_regen(self.packer, CS.elect_gear, 3))
-
     elif driver_doing_speed and abs(clu11_speed - CS.current_cruise_speed) > 4 and CS.current_cruise_speed >= 20 and clu11_speed >= 20 and self.temp_disable_spamming <= 0:
       # if our cruise is on, but our speed is very different than our cruise speed, hit SET to set it
       can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
