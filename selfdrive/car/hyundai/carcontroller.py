@@ -4,8 +4,8 @@ from common.numpy_fast import clip, interp
 from common.conversions import Conversions as CV
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfahda_mfc, create_hda_mfc, \
-                                             create_scc11, create_scc12, create_scc13, create_scc14, create_cpress, \
-                                             create_scc42a, create_scc7d0, create_mdps12, create_fca11, create_fca12
+                                             create_regen, create_cpress, \
+                                             create_mdps12
 from selfdrive.car.hyundai.values import Buttons, CarControllerParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
 from selfdrive.controls.lib.longcontrol import LongCtrlState
@@ -627,6 +627,10 @@ class CarController():
     # if we recently pressed a cruise button, don't spam more to prevent errors for a little bit
     if CS.cruise_buttons != 0:
       self.temp_disable_spamming = 6
+
+      #debug try to set level
+      can_sends.append(create_regen(self.packer, CS.elect_gear, 3))
+
     elif driver_doing_speed and abs(clu11_speed - CS.current_cruise_speed) > 4 and CS.current_cruise_speed >= 20 and clu11_speed >= 20 and self.temp_disable_spamming <= 0:
       # if our cruise is on, but our speed is very different than our cruise speed, hit SET to set it
       can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
@@ -638,7 +642,7 @@ class CarController():
 
     # print debug data
     trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " Pr?>" + str(CS.out.cruiseState.nonAdaptive) + " Rs?>" + "{:.1f}".format(reenable_cruise_atspd) + " DS>" + "{:.1f}".format(desired_speed) + " CCr>" + "{:.1f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.1f}".format(l0v_distval_mph) + " DSpM>" + "{:.1f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
-    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed))
+    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed) + " Regen>" + "{:.1f}".format(CS.out.gearStep))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
