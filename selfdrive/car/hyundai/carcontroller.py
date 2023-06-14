@@ -653,19 +653,22 @@ class CarController():
 
     # ok, apply cruise control button spamming to match desired speed, if we have cruise on and we are not taking a break
     # also dont press buttons if the driver is hitting the gas or brake
-    if cruise_difference >= 0.666 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0 and not driver_doing_speed:
+    if cruise_difference >= 0.5 and CS.current_cruise_speed >= 20 and self.temp_disable_spamming <= 0 and not driver_doing_speed:
       if desired_speed < 20:
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.CANCEL)) #disable cruise to come to a stop      
         self.temp_disable_spamming = 6 # we disabled cruise, don't spam more cancels
         CS.time_cruise_cancelled = datetime.datetime.now() # timestamp when we disabled it, used for autoresuming
-      elif CS.current_cruise_speed > desired_speed:
-        for x in range(cruise_difference_max):
-          can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+      else:
+        can_sends.append(create_set_cruise(self.packer, CS.ems, round(desired_speed)))
         self.temp_disable_spamming = 3 # take a break
-      elif CS.current_cruise_speed < desired_speed:
-        for x in range(cruise_difference_max):
-          can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
-        self.temp_disable_spamming = 3 # take a break
+      #elif CS.current_cruise_speed > desired_speed:
+      #  for x in range(cruise_difference_max):
+      #    can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.SET_DECEL)) #slow cruise
+      #  self.temp_disable_spamming = 3 # take a break
+      #elif CS.current_cruise_speed < desired_speed:
+      #  for x in range(cruise_difference_max):
+      #    can_sends.append(create_cpress(self.packer, CS.clu11, Buttons.RES_ACCEL)) #speed cruise
+      #  self.temp_disable_spamming = 3 # take a break
 
     # are we using the auto resume feature?
     if CS.opkr_autoresume and CS.out.cruiseState.nonAdaptive and self.temp_disable_spamming <= 0 and clu11_speed <= reenable_cruise_atspd:
