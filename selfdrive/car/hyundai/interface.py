@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import datetime
+
 from cereal import car
 from panda import Panda
 from common.conversions import Conversions as CV
@@ -308,6 +310,7 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.gapAdjustCruise
       elif but == Buttons.CANCEL:
         self.CS.pilotEnabled = False
+        self.CS.time_cruise_cancelled = datetime.datetime(2000, 10, 1, 1, 1, 1, 0)
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)
