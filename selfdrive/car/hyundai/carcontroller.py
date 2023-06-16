@@ -576,9 +576,9 @@ class CarController():
       lead_time_ideal_offset = lead_time - target_time
       # don't sudden slow for certain situations, as this causes significant braking
       # 1) if the lead car is far away in either time or distance
-      # 2) if the lead car is moving away from us (and isn't super close)
-      cancel_sudden_slow = lead_vdiff_mph >= 1 and l0d >= 30
-      dont_sudden_slow = lead_time_ideal_offset > target_time * 0.39 or l0d >= 80 or cancel_sudden_slow
+      # 2) if the lead car is moving away from us
+      leadcar_going_faster = lead_vdiff_mph >= 1
+      dont_sudden_slow = lead_time_ideal_offset > target_time * 0.39 or l0d >= 80 or leadcar_going_faster
       # depending on slowing down or speeding up, scale
       if lead_time_ideal_offset < 0:
         lead_time_ideal_offset = -(-lead_time_ideal_offset * (10.5/target_time)) ** 1.4 # exponentially slow down if getting closer and closer
@@ -586,12 +586,12 @@ class CarController():
         lead_time_ideal_offset = (lead_time_ideal_offset * 3) ** 1.25 # exponentially not consider lead car the further away
       # calculate the final max speed we should be going based on lead car
       max_lead_adj = lead_speed + lead_time_ideal_offset
-      # if we don't want to sudden slow, but still slow down, cap a lower value here
-      if cancel_sudden_slow and max_lead_adj < clu11_speed - 2.0:
-        #print("Capping slow speed to CANCEL sudden slow")
-        max_lead_adj = clu11_speed - 2.0
+      # if the lead car is going faster than us, but we want to slow down for some reason (to make space etc)
+      # don't go much slower than the lead car, and cancel any sudden slowing that may be happening
+      fasterleadcar_imposed_speed_limit = max(clu11_speed - 2, lead_speed - 3)
+      if leadcar_going_faster and max_lead_adj < fasterleadcar_imposed_speed_limit:
+        max_lead_adj = fasterleadcar_imposed_speed_limit
       elif dont_sudden_slow and max_lead_adj < clu11_speed * 0.8:
-        #print("Capping slow speed to prevent starting sudden slow")
         max_lead_adj = clu11_speed * 0.8
       # cap our desired_speed to this final max speed
       if desired_speed > max_lead_adj:
