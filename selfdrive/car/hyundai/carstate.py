@@ -551,7 +551,7 @@ class CarState(CarStateBase):
     if CP.bsmAvailable:
       signals += [
         ("CF_Lca_IndLeft", "LCA11"),
-        ("CF_Lca_IndRight", "LCA11")
+        ("CF_Lca_IndRight", "LCA11"),
         ("CF_Lca_IndBriLeft", "LCA11"),
         ("CF_Lca_IndBriRight", "LCA11")
       ]
