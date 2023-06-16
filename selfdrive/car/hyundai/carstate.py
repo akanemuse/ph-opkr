@@ -64,6 +64,11 @@ class CarState(CarStateBase):
     self.cs_timer = 0
     self.cruise_active = False
 
+    self.rbs_raw = 0
+    self.lbs_raw = 0
+    self.rbsB_raw = 0
+    self.lbsB_raw = 0
+
     # atom
     self.cruise_buttons = 0
     self.cruise_buttons_time = 0
@@ -335,8 +340,13 @@ class CarState(CarStateBase):
 
     # Blind Spot Detection and Lane Change Assist signals
     if self.CP.bsmAvailable:
-      ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
-      ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
+      self.lbs_raw = cp.vl["LCA11"]["CF_Lca_IndLeft"]
+      self.rbs_raw = cp.vl["LCA11"]["CF_Lca_IndRight"]
+      self.lbsB_raw = cp.vl["LCA11"]["CF_Lca_IndBriLeft"]
+      self.rbsB_raw = cp.vl["LCA11"]["CF_Lca_IndBriRight"]
+
+      ret.leftBlindspot = self.lbs_raw != 0
+      ret.rightBlindspot = self.rbs_raw != 0
 
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = copy.copy(cp_cam.vl["LKAS11"])
@@ -542,6 +552,8 @@ class CarState(CarStateBase):
       signals += [
         ("CF_Lca_IndLeft", "LCA11"),
         ("CF_Lca_IndRight", "LCA11")
+        ("CF_Lca_IndBriLeft", "LCA11"),
+        ("CF_Lca_IndBriRight", "LCA11")
       ]
       checks += [("LCA11", 50)]
 
