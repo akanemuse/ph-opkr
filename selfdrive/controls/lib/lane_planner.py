@@ -84,12 +84,19 @@ class LanePlanner:
 
     self.total_camera_offset = self.camera_offset
 
+    # car coming at your side? nudge a little away from it
+    # we will nudge slightly more left, as we are usually more to the right by default
+    if sm['carState'].leftBlindspot:
+      self.total_camera_offset -= 0.04
+    if sm['carState'].rightBlindspot:
+      self.total_camera_offset += 0.06
+
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
       self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2
       # left and right ll x is the same
       self.ll_x = lane_lines[1].x
-      self.lll_y = np.array(lane_lines[1].y) + self.camera_offset
-      self.rll_y = np.array(lane_lines[2].y) + self.camera_offset
+      self.lll_y = np.array(lane_lines[1].y) + self.total_camera_offset
+      self.rll_y = np.array(lane_lines[2].y) + self.total_camera_offset
       self.lll_prob = md.laneLineProbs[1]
       self.rll_prob = md.laneLineProbs[2]
       self.lll_std = md.laneLineStds[1]
