@@ -80,84 +80,16 @@ class LanePlanner:
     self.total_camera_offset = self.camera_offset
 
   def parse_model(self, md, sm, v_ego):
-    curvature = sm['controlsState'].curvature
-    mode_select = sm['carState'].cruiseState.modeSel
-    if self.drive_routine_on_co:
-      self.sm.update(0)
-      current_road_offset = -self.sm['liveMapData'].roadCameraOffset
-    else:
-      current_road_offset = 0.0
-
-    Curv = round(curvature, 4)
-    # right lane is minus
-    lane_differ = round(abs(self.lll_y[0] + self.rll_y[0]), 2)
-    lean_offset = 0
-    if int(mode_select) == 4:
-      lean_offset = 0.15
-    else:
-      lean_offset = 0
-
-    if (self.left_curv_offset != 0 or self.right_curv_offset != 0) and v_ego > 8:
-      if curvature > 0.0008 and self.left_curv_offset < 0 and lane_differ >= 0: # left curve
-        if lane_differ > 0.6:
-          lane_differ = 0.6          
-        lean_offset = +round(abs(self.left_curv_offset) * lane_differ * 0.05, 3) # move to left
-      elif curvature > 0.0008 and self.left_curv_offset > 0 and lane_differ <= 0:
-        if lane_differ > 0.6:
-          lane_differ = 0.6
-        lean_offset = -round(abs(self.left_curv_offset) * lane_differ * 0.05, 3) # move to right
-      elif curvature < -0.0008 and self.right_curv_offset < 0 and lane_differ >= 0: # right curve
-        if lane_differ > 0.6:
-          lane_differ = 0.6    
-        lean_offset = +round(abs(self.right_curv_offset) * lane_differ * 0.05, 3) # move to left
-      elif curvature < -0.0008 and self.right_curv_offset > 0 and lane_differ <= 0:
-        if lane_differ > 0.6:
-          lane_differ = 0.6    
-        lean_offset = -round(abs(self.right_curv_offset) * lane_differ * 0.05, 3) # move to right
-      else:
-        lean_offset = 0
-
-    self.lp_timer += DT_MDL
-    if self.lp_timer > 1.0:
-      self.lp_timer = 0.0
-      self.speed_offset = self.params.get_bool("SpeedCameraOffset")
-      if self.params.get_bool("OpkrLiveTunePanelEnable"):
-        self.camera_offset = -(float(Decimal(self.params.get("CameraOffsetAdj", encoding="utf8")) * Decimal('0.001')))
-
-    if self.drive_close_to_edge: # opkr
-      left_edge_prob = np.clip(1.0 - md.roadEdgeStds[0], 0.0, 1.0)
-      left_nearside_prob = md.laneLineProbs[0]
-      left_close_prob = md.laneLineProbs[1]
-      right_close_prob = md.laneLineProbs[2]
-      right_nearside_prob = md.laneLineProbs[3]
-      right_edge_prob = np.clip(1.0 - md.roadEdgeStds[1], 0.0, 1.0)
-
-      self.lp_timer3 += DT_MDL
-      if self.lp_timer3 > 3.0:
-        self.lp_timer3 = 0.0
-        if right_nearside_prob < 0.1 and left_nearside_prob < 0.1:
-          self.road_edge_offset = 0.0
-        elif right_edge_prob > 0.35 and right_nearside_prob < 0.2 and right_close_prob > 0.5 and left_nearside_prob >= right_nearside_prob:
-          self.road_edge_offset = -self.right_edge_offset
-        elif left_edge_prob > 0.35 and left_nearside_prob < 0.2 and left_close_prob > 0.5 and right_nearside_prob >= left_nearside_prob:
-          self.road_edge_offset = -self.left_edge_offset
-        else:
-          self.road_edge_offset = 0.0
-    else:
-      self.road_edge_offset = 0.0
-    if self.speed_offset:
-      speed_offset = -interp(v_ego, [0, 11.1, 16.6, 22.2, 31], [0.10, 0.05, 0.02, 0.01, 0.0])
-    else:
-      speed_offset = 0.0
-    self.total_camera_offset = self.camera_offset + lean_offset + current_road_offset + self.road_edge_offset + speed_offset
-
     lane_lines = md.laneLines
+
+    self.total_camera_offset = self.camera_offset
+
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
       self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2
       # left and right ll x is the same
       self.ll_x = lane_lines[1].x
-      self.lll_y = np.array(lane_lines[1].y) + self.total_camera_offset
-      self.rll_y = np.array(lane_lines[2].y) + self.total_camera_offset
+      self.lll_y = np.array(lane_lines[1].y) + self.camera_offset
+      self.rll_y = np.array(lane_lines[2].y) + self.camera_offset
       self.lll_prob = md.laneLineProbs[1]
       self.rll_prob = md.laneLineProbs[2]
       self.lll_std = md.laneLineStds[1]
