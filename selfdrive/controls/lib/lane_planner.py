@@ -93,18 +93,20 @@ class LanePlanner:
     # -offset -> moves left, +offset -> moves right
     self.total_camera_offset = self.camera_offset
 
-    # car coming at your sides? nudge a bit to make more space
-    # since we settle to the right, we won't nudge right for things on our left
+    # we will use the speed offset variable to control this feature
+    if self.speed_offset:
+      # car coming at your sides? nudge a bit to make more space
+      # since we settle to the right, we won't nudge right for things on our left
 
-    right_bs = sm['carState'].rightBlindspot
-    left_bs = sm['carState'].leftBlindspot
+      right_bs = sm['carState'].rightBlindspot
+      left_bs = sm['carState'].leftBlindspot
 
-    if left_bs and right_bs:
-      # something coming up on both sides? just slightly move left
-      self.total_camera_offset -= 0.025
-    elif right_bs:
-      # something on just right, nudge a bit more left
-      self.total_camera_offset -= 0.05
+      if left_bs and right_bs:
+        # something coming up on both sides? just slightly move left
+        self.total_camera_offset -= 0.025
+      elif right_bs:
+        # something on just right, nudge a bit more left
+        self.total_camera_offset -= 0.05
 
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
       self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2
