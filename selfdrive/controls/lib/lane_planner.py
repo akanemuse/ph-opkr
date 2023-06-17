@@ -82,14 +82,27 @@ class LanePlanner:
   def parse_model(self, md, sm, v_ego):
     lane_lines = md.laneLines
 
+    # live tuning
+    self.lp_timer += DT_MDL
+    if self.lp_timer > 1.0:
+      self.lp_timer = 0.0
+      self.speed_offset = self.params.get_bool("SpeedCameraOffset")
+      if self.params.get_bool("OpkrLiveTunePanelEnable"):
+        self.camera_offset = -(float(Decimal(self.params.get("CameraOffsetAdj", encoding="utf8")) * Decimal('0.001')))
+
+    # -offset -> moves left, +offset -> moves right
     self.total_camera_offset = self.camera_offset
 
     # car coming at your side? nudge a little away from it
     # we will nudge slightly more left, as we are usually more to the right by default
+
+    # something on the left? nudge right
     if sm['carState'].leftBlindspot:
-      self.total_camera_offset -= 0.04
+      self.total_camera_offset += 0.025
+
+    # something on the right? nudge left
     if sm['carState'].rightBlindspot:
-      self.total_camera_offset += 0.06
+      self.total_camera_offset -= 0.04
 
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
       self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2
