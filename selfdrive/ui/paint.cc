@@ -184,13 +184,13 @@ static void ui_draw_vision_lane_lines(UIState *s) {
   NVGcolor color;
   if( scene.leftblindspot )
   {
-    color = nvgRGBAf(1.0, 0.0, 0.0, std::clamp<float>(1.0 - scene.lane_blindspot_probs[0], 0.0, 1.0));
+    color = nvgRGBAf(1.0, 0.0, 0.0, 0.4);
     ui_draw_line(s, scene.lane_blindspot_vertices[0], &color, nullptr);
    }
 
   if( scene.rightblindspot )
   {
-    color = nvgRGBAf(1.0, 0.0, 0.0, std::clamp<float>(1.0 - scene.lane_blindspot_probs[1], 0.0, 1.0));
+    color = nvgRGBAf(1.0, 0.0, 0.0, 0.4);
     ui_draw_line(s, scene.lane_blindspot_vertices[1], &color, nullptr);
   }
 
