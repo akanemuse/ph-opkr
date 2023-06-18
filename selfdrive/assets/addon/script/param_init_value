@@ -27,7 +27,7 @@ PidKi:4
 PidKd:150
 PidKf:7
 TorqueKp:10
-TorqueKf:10
+TorqueKf:9
 TorqueKi:1
 TorqueFriction:65
 TorqueUseAngle:1
@@ -36,8 +36,8 @@ TorqueAngDeadZone:10
 CameraOffsetAdj:-80
 PathOffsetAdj:0
 SteerRatioAdj:1360
-SteerRatioMaxAdj:1360
-SteerActuatorDelayAdj:30
+SteerRatioMaxAdj:1380
+SteerActuatorDelayAdj:33
 SteerLimitTimerAdj:100
 TireStiffnessFactorAdj:85
 SteerMaxBaseAdj:384
