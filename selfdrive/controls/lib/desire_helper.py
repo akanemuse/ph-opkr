@@ -107,18 +107,21 @@ class DesireHelper:
     else:
       lane_direction = 2
 
+    blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
+                          (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
+
+    # debug test
+    button_pressed = carstate.cruiseButtons != 0
+
     if self.lane_change_state == LaneChangeState.off and road_edge_stat == lane_direction:
       self.lane_change_direction = LaneChangeDirection.none
-    elif (not controlstate.active) or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.5):
+    elif (not controlstate.active) or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or blindspot_detected or button_pressed or (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.5):
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
     else:
       torque_applied = carstate.steeringPressed and \
                        ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
                         (carstate.steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
-
-      blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
-                            (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
 
       # LaneChangeState.off
       if self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed:
