@@ -113,15 +113,15 @@ class DesireHelper:
     # debug
     button_pressed = carstate.cruiseButtons != 0
 
-    if self.lane_change_state == LaneChangeState.off and road_edge_stat == lane_direction:
+    if (self.lane_change_state == LaneChangeState.laneChangeStarting or self.lane_change_state == LaneChangeState.laneChangeFinishing) and blindspot_detected or button_pressed:
+      self.lane_change_state = LaneChangeState.off
+      self.lane_change_direction = LaneChangeDirection.none
+      trace1.LaneBlockEventNeeded = 1
+    elif self.lane_change_state == LaneChangeState.off and road_edge_stat == lane_direction:
       self.lane_change_direction = LaneChangeDirection.none
     elif (not controlstate.active) or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.5):
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
-    elif self.lane_change_state != LaneChangeState.off and blindspot_detected or button_pressed:
-      self.lane_change_state = LaneChangeState.off
-      self.lane_change_direction = LaneChangeDirection.none
-      trace1.LaneBlockEventNeeded = 1
     else:
       torque_applied = carstate.steeringPressed and \
                        ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
