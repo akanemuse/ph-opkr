@@ -324,10 +324,10 @@ class Controls:
 
     # Handle lane change
     if not self.lkas_temporary_off:
+      direction = self.sm['lateralPlan'].laneChangeDirection
+      lane_blocked = (CS.leftBlindspot and direction == LaneChangeDirection.left) or (CS.rightBlindspot and direction == LaneChangeDirection.right)
       if self.sm['lateralPlan'].laneChangeState == LaneChangeState.preLaneChange:
-        direction = self.sm['lateralPlan'].laneChangeDirection
-        if (CS.leftBlindspot and direction == LaneChangeDirection.left) or \
-          (CS.rightBlindspot and direction == LaneChangeDirection.right):
+        if lane_blocked:
           self.events.add(EventName.laneChangeBlocked)
         else:
           if direction == LaneChangeDirection.left:
@@ -342,7 +342,10 @@ class Controls:
               self.events.add(EventName.laneChange)
       elif self.sm['lateralPlan'].laneChangeState in (LaneChangeState.laneChangeStarting,
                                                       LaneChangeState.laneChangeFinishing):
-        self.events.add(EventName.laneChange)
+        if lane_blocked:
+          self.events.add(EventName.laneChangeBlocked)
+        else:
+          self.events.add(EventName.laneChange)
 
     if self.can_rcv_error or not CS.canValid and self.ignore_can_error_on_isg and CS.vEgo > 1:
       self.events.add(EventName.canError)
