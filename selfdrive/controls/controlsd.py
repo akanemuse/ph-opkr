@@ -325,7 +325,6 @@ class Controls:
     # did we get a lanechange block message?
     if trace1.LaneBlockEventNeeded != 0:
       self.events.add(EventName.laneChangeBlocked)
-      trace1.LaneBlockEventNeeded = 0
 
     # Handle lane change
     if not self.lkas_temporary_off:

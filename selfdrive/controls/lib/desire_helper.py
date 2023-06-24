@@ -107,6 +107,7 @@ class DesireHelper:
     else:
       lane_direction = 2
 
+    trace1.LaneBlockEventNeeded = 0
     blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                           (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
 
