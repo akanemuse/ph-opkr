@@ -500,7 +500,7 @@ class CarController():
         # get some statistics on the data we've collected
         finalavg = statistics.fmean(self.lead_distance_histavg)
         # calculate accuracy based on variance within X meters
-        finalacc = 1.0 - (statistics.pvariance(self.lead_distance_histavg) / 3.75)
+        finalacc = 1.0 - (statistics.pvariance(self.lead_distance_histavg) / 3.5)
         if finalacc < 0.0:
           finalacc = 0.0
         self.lead_distance_hist.append(finalavg)
