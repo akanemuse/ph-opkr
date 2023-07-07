@@ -483,9 +483,11 @@ class CarController():
           vcurv = acurval
 
     # lead car info
-    l0prob = self.sm['radarState'].leadOne.modelProb
-    l0d = self.sm['radarState'].leadOne.dRel
-    l0v = self.sm['radarState'].leadOne.vRel
+    radarState = self.sm['radarState']
+    l0prob = radarState.leadOne.modelProb
+    l0d = radarState.leadOne.dRel
+    l0v = radarState.leadOne.vRel
+    l0a = radarState.leadOne.aRel
     lead_vdiff_mph = l0v * 2.23694
 
     # store distance history of lead car to merge with l0v to get a better speed relative value
@@ -645,7 +647,7 @@ class CarController():
 
     # print debug data
     trace1.printf1("vC>" + "{:.2f}".format(vcurv) + " Pr?>" + str(CS.out.cruiseState.nonAdaptive) + " Rs?>" + "{:.1f}".format(reenable_cruise_atspd) + " DS>" + "{:.1f}".format(desired_speed) + " CCr>" + "{:.1f}".format(CS.current_cruise_speed) + " StP>" + "{:.2f}".format(stoplinesp) + " DSpd>" + "{:.1f}".format(l0v_distval_mph) + " DSpM>" + "{:.1f}".format(lead_vdiff_mph) + " Conf>" + "{:.2f}".format(overall_confidence))
-    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed) + " RBS>" + "{:.2f}".format(CS.rbs_raw) + " LBS>" + "{:.2f}".format(CS.lbs_raw) + " rbsB>" + "{:.2f}".format(CS.rbsB_raw) + " lbsB>" + "{:.2f}".format(CS.lbsB_raw))
+    trace1.printf2("clu>" + "{:.2f}".format(clu11_speed) + " L0A>" + "{:.2f}".format(l0a))
 
     cruise_difference = abs(CS.current_cruise_speed - desired_speed)
     cruise_difference_max = round(cruise_difference) # how many presses to do in bulk?
