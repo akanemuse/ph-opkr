@@ -215,7 +215,7 @@ def plot_model(m, img, calibration, top_down):
     draw_path(edge, color, img, calibration, top_down, RED)
 
   color = (255, 0, 0)
-  draw_path(m.position, color, img, calibration, top_down, RED, 1.22)
+  draw_path(m.position, color, img, calibration, top_down, RED, 1.28)
 
 
 def plot_lead(rs, top_down):

@@ -49,7 +49,7 @@ static void update_leads(UIState *s, const cereal::RadarState::Reader &radar_sta
     auto lead_data = (i == 0) ? radar_state.getLeadOne() : radar_state.getLeadTwo();
     if (lead_data.getStatus()) {
       float z = line ? (*line).getZ()[get_path_length_idx(*line, lead_data.getDRel())] : 0.0;
-      calib_frame_to_full_frame(s, lead_data.getDRel(), -lead_data.getYRel(), z + 1.22, &s->scene.lead_vertices[i]);
+      calib_frame_to_full_frame(s, lead_data.getDRel(), -lead_data.getYRel(), z + 1.28, &s->scene.lead_vertices[i]);
     }
   }
 }
@@ -141,7 +141,7 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
     max_distance = std::clamp((float)(lead_d - fmin(lead_d * 0.35, 10.)), 0.0f, max_distance);
   }
   max_idx = get_path_length_idx(model_position, max_distance);
-  update_line_data(s, model_position, 0.9, 1.22, &scene.track_vertices, max_idx);
+  update_line_data(s, model_position, 0.9, 1.28, &scene.track_vertices, max_idx);
 
    // update blindspot line
   for (int i = 0; i < std::size(scene.lane_blindspot_vertices); i++) {
@@ -154,7 +154,7 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
   if (scene.stop_line) {
     const auto stop_line = model.getStopLine();
     if (stop_line.getProb() > .5) {
-      update_stop_line_data(s, stop_line, .5, 2, 1.22, &scene.stop_line_vertices);
+      update_stop_line_data(s, stop_line, .5, 2, 1.28, &scene.stop_line_vertices);
     }
   }
 }
